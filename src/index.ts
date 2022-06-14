@@ -14,6 +14,74 @@ app.get("/", (req, res) => {
   res.end("BAGELS!!");
 });
 
+const EXCLUDE_MENUS = ["BEVERAGES", "RETAIL/MISCELLANEOUS"];
+
+function mapToSlack(
+  o: {
+    name: string;
+    groups: {
+      name: string;
+      items: {
+        guid: string;
+        price: string;
+        name: string;
+        outOfStock: boolean;
+        description: string;
+      }[];
+    }[];
+  }[]
+) {
+  return o
+    .filter(({ name }) => !EXCLUDE_MENUS.includes(name))
+    .flatMap((menu) => {
+      return [
+        {
+          type: "header",
+          text: {
+            type: "plain_text",
+            text: menu.name,
+          },
+        },
+        ...menu.groups.flatMap((group) => {
+          return [
+            {
+              type: "context",
+              elements: [
+                {
+                  type: "plain_text",
+                  text: group.name,
+                },
+              ],
+            },
+            {
+              type: "section",
+              text: {
+                type: "mrkdwn",
+                text:
+                  group.items
+                    .filter(({ outOfStock }) => !outOfStock)
+                    .reduce((acc: string, cur: any, i, arr) => {
+                      acc += `*${cur.name}*\t$${cur.price}\n${
+                        !!cur.description ? "_" + cur.description + "_" : ""
+                      }\n\n`;
+                      return acc;
+                    }, "") || "_No items in stock_",
+              },
+            },
+            // accessory: {
+            //   type: "button",
+            //   text: {
+            //     type: "plain_text",
+            //     text: "Order",
+            //   },
+            // value: `order-${item.guid}`,
+            // },
+          ];
+        }),
+      ];
+    });
+}
+
 app.post("/slash/menu", async (req, res) => {
   const gqlRes = await fetch(
     "https://ws-api.toasttab.com/consumer-app-bff/v1/graphql",
@@ -40,7 +108,9 @@ app.post("/slash/menu", async (req, res) => {
       method: "POST",
     }
   );
-  res.json(await gqlRes.json());
+
+  const incomingData = await gqlRes.json();
+  res.json({ blocks: mapToSlack(incomingData[0].data.menusV3.menus) });
 });
 
 app.listen(PORT, "0.0.0.0", () => console.log("listening on " + PORT));
