@@ -1,0 +1,19 @@
+{
+    "blocks": [
+        {
+            "type": "header",
+            "text": {
+                "type": "plain_text",
+                "text": ":sadge: The menu specified is invalid",
+                "emoji": true
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "Please select from the following menus: \n`bagels`, `breakfast`, `soups`, `pastries`, `vegan`"
+            }
+        }
+    ]
+}
