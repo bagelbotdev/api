@@ -7,13 +7,7 @@
     "outDir": "dist",
     "strict": true,
     "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "typeRoots": [
-      "./@types"
-    ]
+    "resolveJsonModule": true
   },
-  "include": [
-    "src/*",
-  ],
-  "typeAcquisition": {}
+  "include": ["./src"]
 }

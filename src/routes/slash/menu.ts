@@ -3,8 +3,10 @@ import { queryFromBalsam } from "../../balsam/gqlClient";
 import { MENUS_QUERY } from "../../../gql/menus.gql";
 import mapMenuResToBlockKit from "../../blockkit/mappers/menu";
 import invalidMenuResp from "../../blockkit/prefab/invalid-menu-resp.json";
+import registration from "../../middlewares/registration";
 
 const menuRouter = Router();
+menuRouter.use(registration); // require users to be registered
 
 const MENU_MAPPINGS = {
   bagels: "BULK BAGELS/ TUBS OF CREAM CHEESE",
@@ -15,6 +17,8 @@ const MENU_MAPPINGS = {
 };
 
 menuRouter.post("/", async (req, res) => {
+  console.log(req.body);
+
   const gqlRes = await queryFromBalsam(MENUS_QUERY);
 
   const selectedMenu = req.body.text || "--INVALID--";

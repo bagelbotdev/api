@@ -1,0 +1,80 @@
+{
+	"blocks": [
+		{
+			"type": "divider"
+		},
+		{
+			"type": "header",
+			"text": {
+				"type": "plain_text",
+				"text": "Name Preferences",
+				"emoji": true
+			}
+		},
+		{
+			"type": "input",
+			"element": {
+				"type": "plain_text_input",
+				"action_id": "textbox-pref-first-name"
+			},
+			"label": {
+				"type": "plain_text",
+				"text": "Preferred First Name",
+				"emoji": true
+			}
+		},
+		{
+			"type": "input",
+			"element": {
+				"type": "plain_text_input",
+				"action_id": "textbox-pref-last-name"
+			},
+			"label": {
+				"type": "plain_text",
+				"text": "Preferred Last Name",
+				"emoji": true
+			}
+		},
+		{
+			"type": "divider"
+		},
+		{
+			"type": "header",
+			"text": {
+				"type": "plain_text",
+				"text": "Payment Preferences (reference only)",
+				"emoji": true
+			}
+		},
+		{
+			"type": "input",
+			"element": {
+				"type": "plain_text_input",
+				"action_id": "textbox-venmo-username"
+			},
+			"label": {
+				"type": "plain_text",
+				"text": "Venmo Username",
+				"emoji": true
+			}
+		},
+		{
+			"type": "divider"
+		},
+		{
+			"type": "actions",
+			"elements": [
+				{
+					"type": "button",
+					"text": {
+						"type": "plain_text",
+						"text": "Submit",
+						"emoji": true
+					},
+					"value": "registration-submit",
+					"action_id": "registration-submit"
+				}
+			]
+		}
+	]
+}

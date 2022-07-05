@@ -3,6 +3,7 @@ import morgan from "morgan";
 
 import slashRouter from "./routes/slash";
 import healthcheckRouter from "./routes/healthcheck";
+import interactionRouter from "./routes/interaction";
 
 const app = express();
 const PORT = 8080;
@@ -12,6 +13,7 @@ app.use(express.json());
 
 app.use(morgan("common"));
 app.use("/slash", slashRouter);
+app.use("/interaction", interactionRouter);
 app.use("/healthcheck", healthcheckRouter);
 
 app.get("/", (req, res) =>
