@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { queryFromBalsam } from "../../balsam/gqlClient";
 import { MENUS_QUERY } from "../../../gql/menus.gql";
-import mapMenuResToBlockKit from "../../blockkit/mappers/menu";
-import invalidMenuResp from "../../blockkit/prefab/invalid-menu-resp.json";
+import mapMenuResToBlockKit from "../../slack/blockkit/mappers/menu";
+import invalidMenuResp from "../../slack/blockkit/prefab/invalid-menu-resp.json";
 import registration from "../../middlewares/registration";
 
 const menuRouter = Router();

@@ -17,7 +17,14 @@ const registration = Router();
 registration.use(async (req, res, next) => {
   await ensureConnected();
   const { user_id } = req.body;
-  const userRecord = await UserModel.findOne({ slack_member_id: user_id });
+
+  console.log("seaching by suid: " + user_id);
+  const userRecord = (
+    await UserModel.where({ slack_user_id: user_id })
+  ).shift();
+
+  console.log("found:" + userRecord);
+
   if (!userRecord)
     return res.end(
       "Unregistered. Use `/register` to get started with bagelbot"

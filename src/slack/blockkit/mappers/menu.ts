@@ -1,4 +1,4 @@
-import { BalsamGQL } from "../../../@types/balsamgql";
+import { BalsamGQL } from "../../../../@types/balsamgql";
 
 export default function mapMenuResToBlockKit(
   selectedMenu: string,

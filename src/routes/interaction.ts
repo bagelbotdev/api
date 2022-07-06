@@ -3,22 +3,27 @@ import { ensureConnected } from "../db/util";
 import UserModel from "../db/models/User";
 
 import fetch from "node-fetch";
+import { sendInteractionResponse } from "../slack/utils";
+import { LoneSchemaDefinitionRule } from "graphql";
 
 const interactionRouter = Router();
 
-const ACTION_DISPATCH: { [k: string]: (payload: any) => Promise<void> } = {
+const ACTION_DISPATCH: { [k: string]: (payload: any) => Promise<unknown> } = {
   "registration-submit": handleRegistrationSubmit,
+  "unregistration-submit": handleUnregistrationSubmit,
 };
 
 async function handleRegistrationSubmit(payload: any) {
   const parsedState = parseState(payload.state);
+
   const slack_user_id = payload.user.id;
   const venmo_user_name = parsedState["textbox-venmo-username"];
   const first_name = parsedState["textbox-pref-first-name"];
   const last_name = parsedState["textbox-pref-last-name"];
 
   await ensureConnected();
-  const curRecord = await UserModel.findOne({ slack_user_id });
+
+  const curRecord = (await UserModel.where({ slack_user_id })).shift();
 
   if (!curRecord)
     await UserModel.create({
@@ -35,14 +40,36 @@ async function handleRegistrationSubmit(payload: any) {
     await curRecord.save();
   }
 
-  console.log(payload.response_url);
+  await sendInteractionResponse(
+    payload.response_url,
+    ":+1: You're all set!. You can use `/register` to update your information at any time"
+  );
+}
 
-  await fetch(payload.response_url, {
-    method: "POST",
-    body: JSON.stringify({
-      text: ":+1: You're all set!. You can use `/register` to update your information at any time",
-    }),
-  });
+async function handleUnregistrationSubmit(payload: any) {
+  const slack_user_id = payload.user.id;
+  const response_url = payload.response_url;
+
+  await ensureConnected();
+
+  const curRecord = (await UserModel.where({ slack_user_id })).shift();
+
+  if (!curRecord)
+    return sendInteractionResponse(
+      response_url,
+      ":confusedparrot: It doesn't look like you have a registration to remove... you can register with `/register`."
+    );
+  else {
+    const suid = curRecord.slack_user_id;
+    const firstName = curRecord.first_name;
+    const lastName = curRecord.last_name;
+
+    await curRecord.delete();
+    return sendInteractionResponse(
+      response_url,
+      `:+1: User '${firstName} ${lastName}' associated with <@${suid}> has been unregistered. They can re-register with \`/register\``
+    );
+  }
 }
 
 // -- //
@@ -62,7 +89,12 @@ function parseState(incomingState: {
 
 interactionRouter.post("/", async (req, res) => {
   const payload = JSON.parse(req.body.payload);
-  await ACTION_DISPATCH[payload.actions.pop().action_id](payload);
+  // const payload = req.body.payload;
+
+  const action_id = payload.actions.pop().action_id;
+  console.log(action_id);
+
+  await ACTION_DISPATCH[action_id](payload);
 
   res.end();
 });

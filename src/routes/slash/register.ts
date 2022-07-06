@@ -1,5 +1,5 @@
 import { Router } from "express";
-import registrationForm from "../../blockkit/prefab/registration-form.json";
+import registrationForm from "../../slack/blockkit/prefab/registration-form.json";
 
 const registerRouter = Router();
 

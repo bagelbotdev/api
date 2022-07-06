@@ -1,0 +1,30 @@
+{
+	"blocks": [
+		{
+			"type": "divider"
+		},
+		{
+			"type": "section",
+			"text": {
+				"type": "plain_text",
+				"text": "Are you sure you wish to unregister from bagelbot? (if no, just don't click anything)",
+				"emoji": true
+			}
+		},
+		{
+			"type": "actions",
+			"elements": [
+				{
+					"type": "button",
+					"text": {
+						"type": "plain_text",
+						"text": "Unregister :sob:",
+						"emoji": true
+					},
+					"value": "unregistration-submit",
+					"action_id": "unregistration-submit"
+				}
+			]
+		}
+	]
+}
