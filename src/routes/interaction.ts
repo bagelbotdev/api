@@ -2,9 +2,7 @@ import { Router } from "express";
 import { ensureConnected } from "../db/util";
 import UserModel from "../db/models/User";
 
-import fetch from "node-fetch";
 import { sendInteractionResponse } from "../slack/utils";
-import { LoneSchemaDefinitionRule } from "graphql";
 
 const interactionRouter = Router();
 
@@ -17,6 +15,7 @@ async function handleRegistrationSubmit(payload: any) {
   const parsedState = parseState(payload.state);
 
   const slack_user_id = payload.user.id;
+  const slack_user_name = payload.user.username;
   const venmo_user_name = parsedState["textbox-venmo-username"];
   const first_name = parsedState["textbox-pref-first-name"];
   const last_name = parsedState["textbox-pref-last-name"];
@@ -29,6 +28,7 @@ async function handleRegistrationSubmit(payload: any) {
     await UserModel.create({
       slack_user_id,
       venmo_user_name,
+      slack_user_name,
       first_name,
       last_name,
     });
