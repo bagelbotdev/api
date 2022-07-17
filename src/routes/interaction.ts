@@ -91,6 +91,8 @@ interactionRouter.post("/", async (req, res) => {
   const payload = JSON.parse(req.body.payload);
   // const payload = req.body.payload;
 
+  console.log(req.body, payload);
+
   const action_id = payload.actions.pop().action_id;
   console.log(action_id);
 

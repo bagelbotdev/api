@@ -1,0 +1,38 @@
+{
+	"blocks": [
+		{
+			"type": "divider"
+		},
+		{
+			"type": "section",
+			"text": {
+				"type": "mrkdwn",
+				"text": "*Tyler Holewinski* has been prompted to pay your their outstanding bagel debt of `$12.49`"
+			}
+		},
+		{
+			"type": "context",
+			"elements": [
+				{
+					"type": "mrkdwn",
+					"text": "_Once the payment comes through, confirm the payment to mark their debt as resolved by clicking the button below._ You can also manually obsolve your debtors of their bagel obligations with `/pardon`"
+				}
+			]
+		},
+		{
+			"type": "actions",
+			"elements": [
+				{
+					"type": "button",
+					"text": {
+						"type": "plain_text",
+						"text": "Payment Confirmed :bagel::moneybag:",
+						"emoji": true
+					},
+					"value": "payment-confirmed",
+					"action_id": "payment-confirmed"
+				}
+			]
+		}
+	]
+}
