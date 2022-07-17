@@ -8,7 +8,6 @@ RUN npm install
 COPY tsconfig.json /app/tsconfig.json
 
 COPY ./src /app/src
-COPY ./res /app/res
 COPY ./gql /app/gql
 COPY ./@types /app/@types
 
