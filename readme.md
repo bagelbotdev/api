@@ -49,3 +49,30 @@ Bagelbot is, in essence, an api endpoint for the `Bagelbot` slackbot to interact
 | `slack/`                 | Resources for interacting with Slack                                                                                                                                                                                                                      |
 | `slack/blockkit/prefab`  | Static blockkit definitions. See the [Slack Visual Message Builder](https://app.slack.com/block-kit-builder) for context                                                                                                                                  |
 | `slack/blockkit/mappers` | Functions that, given a fixed input, returns a blockkit message definition. These are the dynamic counterparts to the `prefab` messages                                                                                                                   |
+
+## Deployment Lifecycle
+
+To deploy changes to the `bagelbot.erwijet.com` endpoint for testing in the `#bagelbot-playground`, follow these steps.
+
+### Build New Image
+
+1. Make sure docker is running
+2. run `yarn deploy`. This will build and push the new image to `bb.cr.erwijet.com:5001`.
+
+### Redeploy Pods
+
+Note that when a pod is killed/restarted, it's replacement will always use the newest image on https://bb.cr.erwijet.com.
+
+There are two options here. The first is to run the `/bbadmin kill pod` (or `/bbadmin kp` for short) command in slack, and bagelbot will kill the running pod. You can check when the pod is back online by navigating to https://bagelbot.erwijet.com/healthcheck. If the result is 404 for 502, then the pod isn't ready yet.
+
+Otherwise, assuming you have a valid `~/.kube/config` file with the correct Roles to interact with the bagelbot kubernetes namespace, you can run the following commands `kubectl rollout restart deployment bagelbot-deployment -n bagelbot`
+
+### Console Monitoring
+
+You may often need to inspect the console output of the live code running at bagelbot.erwijet.com (the version that actually interacts with the slack workspace). Although you can get a lot of information debugging in localhost, a lot of debugging also needs to happen in an actual slack enviornment. To view these logs, you will need a Portainer login. Just slack @tyler and he can set one up for you. Once you have your username and password, go to https://portainer.csh.erwijet.com and sign in. Then, go to the `cassiopeia.erwijet.com` enviornment, click `namespaces` -> `bagelbot` -> `bagelbot-deployment` and at the bottom click `logs`.
+
+Otherwise, you can always use `watch -d -n 1 "kubectl get pods -n bagelbot --no-headers | awk '/bagelbot/{print \$1}' | xargs kubectl logs -n bagelbot"` to view the logs of the current pod if you have `kubectl` set up for the bagelbot namespace.
+
+### Rollout Command
+
+If you are on a mac and have `kubectl` configured, you can install `watch` with `brew install watch` and execute the entire deployment process (build, push, restart, wait for healthcheck) with `yarn rollout` and wait for the healthcheck to show 'OK'.

@@ -7,7 +7,7 @@ import interactionRouter from "./routes/interaction";
 import eventRouter from "./routes/event";
 
 const app = express();
-const PORT = 8080;
+const PORT = 8000;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -21,6 +21,12 @@ app.use("/event", eventRouter);
 
 app.get("/", (req, res) =>
   res.redirect("https://bryx.slack.com/archives/C03J2TJNRV2")
+);
+
+app.get("/kube", (req, res) =>
+  res.redirect(
+    "http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/#/job?namespace=bagelbot"
+  )
 );
 
 app.listen(PORT, "0.0.0.0", () => console.log("listening on " + PORT));

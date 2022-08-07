@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { queryFromBalsam } from "../../balsam/gqlClient";
+import { queryFromBalsam } from "../../balsam/utils";
 import { MENUS_QUERY } from "../../../gql/menus.gql";
 import mapMenuResToBlockKit from "../../slack/blockkit/mappers/menu";
 import invalidMenuResp from "../../slack/blockkit/prefab/invalid-menu-resp.json";

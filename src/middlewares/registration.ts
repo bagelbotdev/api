@@ -18,12 +18,9 @@ registration.use(async (req, res, next) => {
   await ensureConnected();
   const { user_id } = req.body;
 
-  console.log("seaching by suid: " + user_id);
   const userRecord = (
     await UserModel.where({ slack_user_id: user_id })
   ).shift();
-
-  console.log("found:" + userRecord);
 
   if (!userRecord)
     return res.end(
