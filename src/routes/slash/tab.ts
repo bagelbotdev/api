@@ -11,16 +11,16 @@ tabRouter.post("/", async (req, res) => {
   const { text } = req.body;
   const curTab = (await OrderTabModel.find({ closed: false })).shift();
 
-  if (text.toLowerCase() == "new") {
+  if (text.toLowerCase() == "open") {
     if (curTab == null) {
       const newTab = new OrderTabModel();
       newTab.opened_at = Date.now();
       newTab.opener = req.userRecord?.slack_user_id;
       newTab.closed = false;
-      newTab.orders = [];
       newTab.balsam_cart_guid = await requestNewCart();
 
       await newTab.save();
+      sendMessage(`-- <@${req.userRecord?.slack_user_id}> OPENED A NEW TAB --`);
       return res.end("Success! You have opened a new bagel tab");
     } else {
       return res.end(
@@ -42,7 +42,7 @@ tabRouter.post("/", async (req, res) => {
     }
   } else if (text.toLowerCase() == "inspect") {
   } else {
-    return res.end("Invalid option! Usage: `/tab <new|close|inspect>`");
+    return res.end("Invalid option! Usage: `/tab <open|close|inspect>`");
   }
 });
 
