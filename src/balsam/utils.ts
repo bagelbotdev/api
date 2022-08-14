@@ -4,10 +4,7 @@ import { createClient, TypedDocumentNode, OperationResult } from "@urql/core";
 // @ts-ignore
 globalThis.fetch = fetch;
 
-export function queryFromBalsam(
-  query: TypedDocumentNode<any, object>,
-  variables?: any
-) {
+export function queryFromBalsam(query: TypedDocumentNode<any, object>, variables?: any) {
   return new Promise<OperationResult<any, object>>((resolve, reject) => {
     const { input } = variables;
 
@@ -22,7 +19,7 @@ export function queryFromBalsam(
           restaurantGuid: "7fb7d7c2-7204-4fbe-ae03-ce2324ecab68",
           visibility: "TOAST_ONLINE_ORDERING",
           menuApi: "DO",
-          ...input,
+          ...(input ?? {}),
         },
       })
       .toPromise()

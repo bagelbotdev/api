@@ -1,6 +1,6 @@
 import { gql } from "@urql/core";
 
-export const ADD_ITEM_TO_EMPTY_CART = gql`
+export const ADD_ITEM_TO_CART = gql`
   mutation ADD_ITEM_TO_CART($input: AddItemToCartInputV2!) {
     addItemToCartV2(input: $input) {
       ... on CartResponse {
@@ -225,3 +225,53 @@ export const ADD_ITEM_TO_EMPTY_CART = gql`
     __typename
   }
 `;
+
+export type ADD_ITEM_TO_CART_VARIABLES = {
+  input:
+    | {
+        cartGuid: string;
+        selection: {
+          itemGroupGuid: string;
+          itemGuid: string;
+          modifierGroups: [
+            {
+              guid: string;
+              modifiers: [
+                {
+                  itemGroupGuid: string;
+                  itemGuid: string;
+                }
+              ];
+            }
+          ];
+          quantity: number;
+          specialInstructions: string;
+        };
+      }
+    | {
+        createCartInput: {
+          cartFulfillmentInput: {
+            fulfillmentDateTime: null;
+            fulfillmentType: string;
+            diningOptionBehavior: string;
+          };
+        };
+        selection: {
+          itemGroupGuid: string;
+          itemGuid: string;
+          modifierGroups: [
+            {
+              guid: string;
+              modifiers: [
+                {
+                  itemGroupGuid: string;
+                  itemGuid: string;
+                }
+              ];
+            }
+          ];
+          quantity: number;
+          specialInstructions: string;
+        };
+      };
+};
