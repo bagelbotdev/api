@@ -5,13 +5,14 @@
   "main": "dist/src/index.js",
   "scripts": {
     "build": "tsc",
+    "build-menu": "ts-node src/build-items.ts",
     "start": "npm run build && node dist/src/index.js",
     "format": "prettier --write src",
-    "update-service": "curl -X POST https://webhook.csh.erwijet.com/deploy/bagelbot",
-    "docker-build": "docker build . -t bb.cr.erwijet.com:5001/api:latest",
-    "docker-push": "docker push bb.cr.erwijet.com:5001/api:latest",
+    "update-service": "kubectl rollout restart deploy bagelbot-deployment -n  bagelbot",
+    "docker-build": "docker build . -t ghcr.io/bagelbotdev/api:latest",
+    "docker-push": "docker push ghcr.io/bagelbotdev/api:latest",
     "deploy": "yarn docker-build && yarn docker-push",
-    "rollout": "yarn deploy && sleep 3 && kubectl rollout restart deployment bagelbot-deployment -n bagelbot && sleep 1 && watch -n 0.5 curl -sL https://bagelbot.erwijet.com/healthcheck"
+    "rollout": "yarn deploy && sleep 3 && yarn update-service && sleep 1 && watch -n 0.5 curl -sL https://bagelbot.erwijet.com/healthcheck"
   },
   "keywords": [],
   "author": "",
@@ -33,6 +34,7 @@
     "@types/graphql": "^14.5.0",
     "@types/morgan": "^1.9.3",
     "prettier": "^2.6.2",
+    "ts-node": "^10.9.1",
     "typescript": "^4.7.3"
   }
 }
