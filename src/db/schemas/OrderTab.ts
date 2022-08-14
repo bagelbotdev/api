@@ -1,10 +1,14 @@
-import { Schema } from 'mongoose';
+import { Schema } from "mongoose";
 
 export default new Schema({
-    opener: { type: Schema.Types.ObjectId, ref: 'User' },
-    opened_at: { type: 'date' },
-    orders: [{
-        for: { type: Schema.Types.ObjectId, ref: 'User' },
-        balsam_item_guid: { type: 'string' }
-    }]
-})
+  opener: { type: "string" },
+  opened_at: { type: "number" },
+  orders: [
+    {
+      for: { type: "string" },
+      balsam_item_guid: { type: "string" },
+    },
+  ],
+  balsam_cart_guid: { type: "string" },
+  closed: { type: "boolean" },
+});

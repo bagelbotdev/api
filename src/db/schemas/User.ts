@@ -1,4 +1,4 @@
-import { Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 export default new Schema({
   slack_user_id: { type: "string" },
@@ -9,6 +9,7 @@ export default new Schema({
 });
 
 export interface UserSpec {
+  _id: mongoose.Types.ObjectId;
   slack_user_id: string;
   slack_user_name: string;
   venmo_user_name: string;
