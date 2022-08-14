@@ -10,7 +10,7 @@ export function sendInteractionResponse(responseUrl: string, content: string) {
 }
 
 export function sendMessage(content: string, hidden?: boolean) {
-  return fetch("https://hooks.slack.com/services/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", {
+  return fetch(process.env.SLACK_WEBHOOK!, {
     method: "POST",
     body: JSON.stringify({
       text: content,

@@ -1,5 +1,6 @@
 import express from "express";
 import morgan from "morgan";
+import dotenv from "dotenv";
 
 import slashRouter from "./routes/slash";
 import healthcheckRouter from "./routes/healthcheck";
@@ -9,9 +10,10 @@ import eventRouter from "./routes/event";
 const app = express();
 const PORT = 8000;
 
+dotenv.config();
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
 app.use(morgan("common"));
 
 app.use("/slash", slashRouter);
@@ -19,9 +21,7 @@ app.use("/interaction", interactionRouter);
 app.use("/healthcheck", healthcheckRouter);
 app.use("/event", eventRouter);
 
-app.get("/", (req, res) =>
-  res.redirect("https://bryx.slack.com/archives/C03J2TJNRV2")
-);
+app.get("/", (req, res) => res.redirect("https://bryx.slack.com/archives/C03J2TJNRV2"));
 
 app.get("/kube", (req, res) =>
   res.redirect(

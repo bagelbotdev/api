@@ -5,10 +5,8 @@ import elasticlunr from "elasticlunr";
 import MenuItemModel from "./models/MenuItem";
 
 export async function ensureConnected() {
-  const PRIMARY_CONN_STR =
-    "mongodb://bagelbot-sys:hAy&5mJAg;-@mongo.erwijet.com:30909/bagelbot?authMechanism=DEFAULT&authSource=bagelbot";
-
-  await mongoose.connect(PRIMARY_CONN_STR);
+  const PRIMARY_CONN_STR = process.env.MONGO_URL;
+  await mongoose.connect(PRIMARY_CONN_STR!);
 }
 
 export const getMenuItems = cache(async () => {
