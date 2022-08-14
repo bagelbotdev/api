@@ -5,7 +5,7 @@
   "main": "dist/src/index.js",
   "scripts": {
     "build": "tsc",
-    "build-menu": "ts-node src/build-items.ts",
+    "build-menu": "ts-node menu/build-items.ts",
     "start": "npm run build && node dist/src/index.js",
     "format": "prettier --write src",
     "update-service": "kubectl rollout restart deploy bagelbot-deployment -n  bagelbot",
