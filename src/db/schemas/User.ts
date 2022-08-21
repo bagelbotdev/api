@@ -6,6 +6,9 @@ export default new Schema({
   venmo_user_name: { type: "string" },
   first_name: { type: "string" },
   last_name: { type: "string" },
+  bryxcoin_wallet: { type: "string" },
+  bryxcoin_password: { type: "string" },
+  bryxcoin_address: { type: "string" },
 });
 
 export interface UserSpec {
@@ -15,4 +18,7 @@ export interface UserSpec {
   venmo_user_name: string;
   first_name: string;
   last_name: string;
+  bryxcoin_wallet: string;
+  bryxcoin_password: string;
+  bryxcoin_address: string;
 }

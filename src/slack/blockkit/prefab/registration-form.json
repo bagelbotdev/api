@@ -39,29 +39,6 @@
 			"type": "divider"
 		},
 		{
-			"type": "header",
-			"text": {
-				"type": "plain_text",
-				"text": "Payment Preferences (reference only)",
-				"emoji": true
-			}
-		},
-		{
-			"type": "input",
-			"element": {
-				"type": "plain_text_input",
-				"action_id": "textbox-venmo-username"
-			},
-			"label": {
-				"type": "plain_text",
-				"text": "Venmo Username",
-				"emoji": true
-			}
-		},
-		{
-			"type": "divider"
-		},
-		{
 			"type": "actions",
 			"elements": [
 				{

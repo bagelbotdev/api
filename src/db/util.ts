@@ -6,6 +6,9 @@ import MenuItemModel from "./models/MenuItem";
 
 export async function ensureConnected() {
   const PRIMARY_CONN_STR = process.env.MONGO_URL;
+
+  console.log({ PRIMARY_CONN_STR });
+
   await mongoose.connect(PRIMARY_CONN_STR!);
 }
 

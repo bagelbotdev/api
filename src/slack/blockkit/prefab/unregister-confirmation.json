@@ -7,7 +7,7 @@
 			"type": "section",
 			"text": {
 				"type": "plain_text",
-				"text": "Are you sure you wish to unregister from bagelbot? (if no, just don't click anything)",
+				"text": "Are you sure you wish to unregister from bagelbot?\nPlease understand *THIS WILL DELETE ALL YOUR BRYXCOIN FOREVER AS WELL*\nTo stay a part of bagelbot, just don't click anything",
 				"emoji": true
 			}
 		},
@@ -18,7 +18,7 @@
 					"type": "button",
 					"text": {
 						"type": "plain_text",
-						"text": "Unregister :sob:",
+						"text": "Unregister :bagel::sadge::sob:",
 						"emoji": true
 					},
 					"value": "unregistration-submit",

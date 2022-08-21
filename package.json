@@ -27,7 +27,8 @@
     "joi": "^17.6.0",
     "mongoose": "^6.4.0",
     "morgan": "^1.10.0",
-    "node-fetch": "^2.6.6"
+    "node-fetch": "^2.6.6",
+    "random-words": "^1.2.0"
   },
   "devDependencies": {
     "@types/elasticlunr": "^0.9.5",

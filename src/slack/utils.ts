@@ -10,7 +10,7 @@ export function sendInteractionResponse(responseUrl: string, content: string) {
 }
 
 export function sendMessage(content: string, hidden?: boolean) {
-  return fetch(process.env.SLACK_WEBHOOK!, {
+  return fetch(process.env.SLACKBOT_WEBHOOK!, {
     method: "POST",
     body: JSON.stringify({
       text: content,

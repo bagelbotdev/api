@@ -54,7 +54,7 @@ export async function requestNewCart() {
   return cartGuid;
 }
 
-export async function addToCart(cartGuid: string, prefab: MenuItemSpec) {
+export async function addToCart(cartGuid: string, prefab: MenuItemSpec, ordererName: string) {
   const gqlRes = await performBalsamMutation(ADD_ITEM_TO_CART, {
     input: {
       cartGuid,
@@ -62,6 +62,7 @@ export async function addToCart(cartGuid: string, prefab: MenuItemSpec) {
         itemGuid: prefab.balsam_item_guid,
         itemGroupGuid: prefab.balsam_group_guid,
         quantity: 1,
+        specialInstructions: ordererName,
         modifierGroups: prefab.balsam_modifiers.map((modifierSet) => ({
           guid: modifierSet.modifier_set_guid,
           modifiers: modifierSet.modifiers.map((modifier) => ({

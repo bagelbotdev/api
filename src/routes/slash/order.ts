@@ -2,6 +2,7 @@ import { Router } from "express";
 import { addToCart } from "../../balsam/cart";
 import OrderTabModel from "../../db/models/OrderTab";
 import { MenuItemSpec } from "../../db/schemas/MenuItem";
+import mapOrderConfirmationToBlockKit from "../../slack/blockkit/mappers/confirmOrder";
 import { ensureConnected, searchMenuItemsByKeyword } from "../../db/util";
 import registration from "../../middlewares/registration";
 import { sendMessage } from "../../slack/utils";
@@ -22,10 +23,9 @@ orderRouter.post("/", async (req, res) => {
     return res.end("I couldn't find any valid Menu Item with those keywords :sob:");
 
   const cartGuid = curTab.balsam_cart_guid;
-  console.log(await addToCart(cartGuid!, prefabMenuItem as unknown as MenuItemSpec));
-
-  sendMessage(`<@${req.userRecord?.slack_user_id}> ordered 1 ${prefabMenuItem.name}`);
-  res.end("");
+  return res.json(
+    mapOrderConfirmationToBlockKit(cartGuid!, prefabMenuItem._id.toString(), prefabMenuItem.name!)
+  );
 });
 
 export default orderRouter;

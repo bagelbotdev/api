@@ -6,9 +6,6 @@ const payRouter = Router();
 payRouter.use(registration); // require registration
 
 payRouter.post("/", async (req, res) => {
-  console.log(req.userRecord);
-  console.log(req.body);
-
   res.json(promptForPaymentConfirmation);
 });
 

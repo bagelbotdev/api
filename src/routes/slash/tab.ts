@@ -3,6 +3,7 @@ import { requestNewCart } from "../../balsam/cart";
 import OrderTabModel from "../../db/models/OrderTab";
 import registration from "../../middlewares/registration";
 import { sendMessage } from "../../slack/utils";
+
 const tabRouter = Router();
 
 tabRouter.use(registration);
@@ -40,9 +41,8 @@ tabRouter.post("/", async (req, res) => {
       await sendMessage(`-- <@${curTab.opener}> CLOSED THE BAGEL TAB --`);
       return res.end("Success! Your cart guid is `" + curTab.balsam_cart_guid + "`");
     }
-  } else if (text.toLowerCase() == "inspect") {
   } else {
-    return res.end("Invalid option! Usage: `/tab <open|close|inspect>`");
+    return res.end("Invalid option! Usage: `/tab <open|close>`");
   }
 });
 

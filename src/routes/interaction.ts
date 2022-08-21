@@ -1,22 +1,56 @@
 import { Router } from "express";
 import { ensureConnected } from "../db/util";
 import UserModel from "../db/models/User";
+import { canAfford, createTransactionBySlackId } from "../coin/payment";
+import { newCoinUser } from "../coin/utils";
+import { addToCart } from "../balsam/cart";
+import { sendMessage } from "../slack/utils";
+import { MenuItemSpec } from "../db/schemas/MenuItem";
 
 import { sendInteractionResponse } from "../slack/utils";
+import MenuItemModel from "../db/models/MenuItem";
+import OrderTabModel from "../db/models/OrderTab";
 
 const interactionRouter = Router();
 
 const ACTION_DISPATCH: { [k: string]: (payload: any) => Promise<unknown> } = {
   "registration-submit": handleRegistrationSubmit,
   "unregistration-submit": handleUnregistrationSubmit,
+  "confirm-order": handleConfirmOrder,
 };
+
+async function handleConfirmOrder(payload: any) {
+  await ensureConnected();
+
+  const [cartGuid, menuItemOid] = payload.actions.at(0).value.split(":");
+  const menuItem = await MenuItemModel.findOne({ _id: menuItemOid });
+
+  const user = await UserModel.findOne({ slack_user_id: payload.user.id });
+  const tab = await OrderTabModel.findOne({ closed: false });
+
+  if (!tab)
+    return await sendInteractionResponse(
+      payload.response_url,
+      "too late! It looks like the order tab is already closed :sadge:. You can ask an admin to reopen it with `/bbadmin tab reopen <tab_id>`"
+    );
+
+  if (!await canAfford(user!.bryxcoin_address!, menuItem!.price! * 100))
+    return await sendInteractionResponse(payload.response_url, ':sadge:, looks like you can\'t afford that! Check you bryxcoin wallet with `/balance`. To get more bryxcoin, you can reach out to Tyler for a buyin, or you can host the next bagel tab! `/tab open`');
+
+  await addToCart(cartGuid!, menuItem as unknown as MenuItemSpec, user!.first_name!);
+  await sendMessage(`<@${user!.slack_user_id!}> ordered 1 ${menuItem?.name}`);
+
+  await createTransactionBySlackId(user!.slack_user_id!, tab!.opener!, menuItem!.price! * 100);
+  await sendInteractionResponse(payload.response_url, "all set! you ordered: " + menuItemOid);
+}
 
 async function handleRegistrationSubmit(payload: any) {
   const parsedState = parseState(payload.state);
 
+  const [bryxcoin_password, bryxcoin_wallet, bryxcoin_address] = await newCoinUser();
+
   const slack_user_id = payload.user.id;
   const slack_user_name = payload.user.username;
-  const venmo_user_name = parsedState["textbox-venmo-username"];
   const first_name = parsedState["textbox-pref-first-name"];
   const last_name = parsedState["textbox-pref-last-name"];
 
@@ -27,13 +61,14 @@ async function handleRegistrationSubmit(payload: any) {
   if (!curRecord)
     await UserModel.create({
       slack_user_id,
-      venmo_user_name,
       slack_user_name,
       first_name,
       last_name,
+      bryxcoin_address,
+      bryxcoin_wallet,
+      bryxcoin_password,
     });
   else {
-    curRecord.venmo_user_name = venmo_user_name;
     curRecord.first_name = first_name;
     curRecord.last_name = last_name;
 
@@ -42,7 +77,9 @@ async function handleRegistrationSubmit(payload: any) {
 
   await sendInteractionResponse(
     payload.response_url,
-    ":+1: You're all set!. You can use `/register` to update your information at any time"
+    ":+1: You're all set!. You can use `/register` to update your information at any time.\n\nYour wallet password is `" +
+      bryxcoin_password +
+      "`"
   );
 }
 
@@ -89,12 +126,7 @@ function parseState(incomingState: {
 
 interactionRouter.post("/", async (req, res) => {
   const payload = JSON.parse(req.body.payload);
-  // const payload = req.body.payload;
-
-  console.log(req.body, payload);
-
-  const action_id = payload.actions.pop().action_id;
-  console.log(action_id);
+  const action_id = payload.actions.at(0).action_id;
 
   await ACTION_DISPATCH[action_id](payload);
 

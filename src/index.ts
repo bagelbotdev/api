@@ -23,6 +23,12 @@ app.use("/event", eventRouter);
 
 app.get("/", (req, res) => res.redirect("https://bryx.slack.com/archives/C03J2TJNRV2"));
 
+app.get("/doc", (req, res) =>
+  res.redirect(
+    "https://docs.google.com/document/d/1gPcZ1OuE-FlktDkrFvKx0gxcydmoJ-bQjCh1bPUptjE/edit"
+  )
+);
+
 app.get("/kube", (req, res) =>
   res.redirect(
     "http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/#/job?namespace=bagelbot"
