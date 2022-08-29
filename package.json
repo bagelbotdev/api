@@ -9,7 +9,7 @@
     "start": "npm run build && node dist/src/index.js",
     "format": "prettier --write src",
     "update-service": "kubectl rollout restart deploy bagelbot-deployment -n  bagelbot",
-    "docker-build": "docker build . -t ghcr.io/bagelbotdev/api:latest",
+    "docker-build": "docker buildx build --platform linux/amd64 . -t ghcr.io/bagelbotdev/api:latest",
     "docker-push": "docker push ghcr.io/bagelbotdev/api:latest",
     "deploy": "yarn docker-build && yarn docker-push",
     "rollout": "yarn deploy && sleep 3 && yarn update-service && sleep 1 && watch -n 0.5 curl -sL https://bagelbot.erwijet.com/healthcheck"
