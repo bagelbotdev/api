@@ -6,6 +6,8 @@ import slashRouter from "./routes/slash";
 import healthcheckRouter from "./routes/healthcheck";
 import interactionRouter from "./routes/interaction";
 import eventRouter from "./routes/event";
+import resolveCartRouter from "./routes/resolve-cart";
+
 import v1Router from './routes/v1';
 
 const app = express();
@@ -20,6 +22,7 @@ app.use(morgan("common"));
 app.use("/slash", slashRouter);
 app.use("/interaction", interactionRouter);
 app.use("/healthcheck", healthcheckRouter);
+app.use('/resolve-cart', resolveCartRouter);
 app.use("/event", eventRouter);
 app.use('/v1', v1Router);
 
@@ -38,4 +41,5 @@ app.get("/kube", (req, res) =>
 );
 
 app.get('/dashboard', (req, res) => res.redirect('https://bagelbot.retool.com/embedded/public/882a23bd-3b14-4508-a935-99002af60d03'));
+
 app.listen(PORT, "0.0.0.0", () => console.log("listening on " + PORT));
