@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import DebtModel from "./models/Debt";
 import cache from "./caching";
 import elasticlunr from "elasticlunr";
 import MenuItemModel from "./models/MenuItem";
@@ -16,19 +15,6 @@ export const getMenuItems = cache(async () => {
   await ensureConnected();
   return await MenuItemModel.find({});
 });
-
-export async function getVenmoPayableLink(debtor: string, payee: string) {
-  await ensureConnected();
-
-  const { amount_due } = (
-    await DebtModel.where({
-      debtor_slack_id: debtor,
-      payee_slack_id: payee,
-    })
-  ).shift() || { amount_due: 0 };
-
-  return `https://venmo.com/${payee}?txn=pay&amount=${amount_due}&memo=bagels`;
-}
 
 export const searchMenuItemsByKeyword = cache(async (queryExpr: string) => {
   const items = await getMenuItems();
