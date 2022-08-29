@@ -4,6 +4,7 @@
 
 - [BagelBot 🥯](#bagelbot-)
   - [Important External Resources](#important-external-resources)
+- [Enviornment Variable Requirements](#enviornment-variable-requirements)
   - [Tech Stack](#tech-stack)
   - [Endpoint Mappings](#endpoint-mappings)
   - [Project Structure](#project-structure)
@@ -27,6 +28,17 @@
 - [Bagelbot Deployment Management](https://portainer.csh.erwijet.com)
 - [Recommended DB Viewer](https://www.mongodb.com/products/compass)
   - or use `brew install --cask mongodb-compass` if on a mac with `brew.sh` installed
+
+
+# Enviornment Variable Requirements
+
+Running an instance of `bagelbotdev/api` requires the following enviornment variables specified, typically in a top-level `.env` file.
+
+| Name | Purpose |
+| --- | --- |
+| `MONGO_URL` | The mongodb connection string with credentials specified |
+| `COIN_ENDPOINT` | The coin api endpoint to interact with. Typically, this is http://bryxcoin01.csh.rit.edu | 
+| `SLACKBOT_WEBHOOK` | The webhook to interact with when sending messages to slack channels | 
 
 Slack `@tyler` with any questions or for access credentials.
 
