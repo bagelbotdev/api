@@ -45,3 +45,16 @@ export async function newCoinUser(): Promise<[Password, Wallet, Address]> {
 
   return [password, wallet, address];
 }
+
+export async function isHostAlive(host: string) {
+  try {
+    const res = await fetch(`https://${host}/blockchain`, {
+      method: 'GET',
+      headers: {
+	accept: 'text/html'
+      }
+    });
+
+    return res.status - 400 < 0; // status code is not in the 4XX range or above
+  } catch { return false; }
+}
