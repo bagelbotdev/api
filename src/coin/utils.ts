@@ -59,7 +59,6 @@ export async function isHostAlive(host: string) {
     return res.status - 400 < 0; // status code is not in the 4XX range or above
   } catch { return false; }
 }
-<<<<<<< HEAD
 
 export async function checkHostVer(host: string) {
   const MIN_VER = '1.0.0';
@@ -70,5 +69,3 @@ export async function checkHostVer(host: string) {
     return semver(reportedVer, MIN_VER) != -1;
   } catch { return false }
 }
-=======
->>>>>>> 41dc23c (feat(v1): add host mgmt and enrollment logic)
