@@ -21,6 +21,13 @@ hostsRouter.get('/meta/compliance', (req, res) => {
     })
 });
 
+// hostsRouter.get('/', async (req, res) => {
+//     await ensureConnected();
+//     const hosts = await HostModel.find({ });
+
+//     return res.json(hosts);
+// });
+
 hostsRouter.post('/', async (req, res) => {
     const { host } = req.body;
     return res.json(await registerNewHost(host, 3));
