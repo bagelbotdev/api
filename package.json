@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "dist/src/index.js",
+  "min_host_ver": "1.0.0",
   "scripts": {
     "build": "tsc",
     "build-menu": "ts-node menu/build-items.ts",
@@ -19,6 +20,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@types/node-fetch": "^2.6.1",
+    "@types/semver-compare": "^1.0.1",
     "@urql/core": "^2.5.0",
     "axios": "^0.27.2",
     "cors": "^2.8.5",
@@ -29,7 +31,8 @@
     "mongoose": "^6.4.6",
     "morgan": "^1.10.0",
     "node-fetch": "^2.6.6",
-    "random-words": "^1.2.0"
+    "random-words": "^1.2.0",
+    "semver-compare": "^1.0.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.12",
