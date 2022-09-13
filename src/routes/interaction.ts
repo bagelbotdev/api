@@ -40,6 +40,9 @@ async function handleConfirmOrder(payload: any) {
   await addToCart(cartGuid!, menuItem as unknown as MenuItemSpec, user!.first_name!);
   await sendMessage(`<@${user!.slack_user_id!}> ordered 1 ${menuItem?.name}`);
 
+  tab.order_logs += `\n${user!.first_name} ${user!.last_name} ordered ${menuItem!.name} for $${menuItem?.price}`;
+  await tab.save();
+
   await createTransactionBySlackId(user!.slack_user_id!, tab!.opener!, menuItem!.price! * 100);
   await sendInteractionResponse(payload.response_url, "all set! you ordered: " + menuItemOid);
 }

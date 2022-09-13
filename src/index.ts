@@ -6,7 +6,6 @@ import slashRouter from "./routes/slash";
 import healthcheckRouter from "./routes/healthcheck";
 import interactionRouter from "./routes/interaction";
 import eventRouter from "./routes/event";
-import resolveCartRouter from "./routes/resolve-cart";
 import v1Router from './routes/v1';
 
 const app = express();
@@ -21,7 +20,6 @@ app.use(morgan("common"));
 app.use("/slash", slashRouter);
 app.use("/interaction", interactionRouter);
 app.use("/healthcheck", healthcheckRouter);
-app.use('/resolve-cart', resolveCartRouter);
 app.use("/event", eventRouter);
 app.use('/v1', v1Router);
 

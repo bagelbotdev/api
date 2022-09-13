@@ -16,8 +16,9 @@ tabRouter.post("/", async (req, res) => {
     if (curTab == null) {
       const newTab = new OrderTabModel();
       newTab.opened_at = Date.now();
-      newTab.opener = req.userRecord?.slack_user_id;
+      newTab.opener = req.userRecord?.slack_user_id!;
       newTab.closed = false;
+      newTab.order_logs = `Tab created by ${req.userRecord?.first_name} ${req.userRecord?.last_name}`;
       newTab.balsam_cart_guid = await requestNewCart();
 
       await newTab.save();
@@ -39,7 +40,8 @@ tabRouter.post("/", async (req, res) => {
       curTab.closed = true;
       await curTab.save();
       await sendMessage(`-- <@${curTab.opener}> CLOSED THE BAGEL TAB --`);
-      return res.end("Success! Your cart guid is `" + curTab.balsam_cart_guid + "`");
+      await sendMessage('```\nToday\'s Tab\n\n' + curTab.order_logs! + '\n```');
+      return res.end("Success! Your cart guid is `" + curTab.balsam_cart_guid);
     }
   } else {
     return res.end("Invalid option! Usage: `/tab <open|close>`");
