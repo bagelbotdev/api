@@ -1,22 +1,22 @@
 import { Schema } from "mongoose";
 
 const BalsamItemModifier = new Schema({
-  modifier_group_guid: { type: "string" },
-  modifier_guid: { type: "string" },
+  modifier_group_guid: { type: String },
+  modifier_guid: { type: String },
 });
 
 const BalsamItemModifierSet = new Schema({
-  modifier_set_guid: { type: "string" },
+  modifier_set_guid: { type: String },
   modifiers: [{ type: BalsamItemModifier }],
 });
 
 export default new Schema({
-  name: { type: "string" },
+  name: { type: String },
   keywords: [{ type: Schema.Types.String }],
-  balsam_item_guid: { type: "string" },
-  balsam_group_guid: { type: "string" },
+  balsam_item_guid: { type: String },
+  balsam_group_guid: { type: String },
   balsam_modifiers: [{ type: BalsamItemModifierSet }],
-  price: { type: "number" },
+  price: { type: Number },
 });
 
 export interface MenuItemSpec {
