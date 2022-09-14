@@ -34,7 +34,7 @@ async function handleConfirmOrder(payload: any) {
       "too late! It looks like the order tab is already closed :sadge:. You can ask an admin to reopen it with `/bbadmin tab reopen <tab_id>`"
     );
 
-  if (!await canAfford(user!.bryxcoin_address!, menuItem!.price! * 100))
+  if (user!.slack_user_id != tab.opener && !await canAfford(user!.bryxcoin_address!, menuItem!.price! * 100))
     return await sendInteractionResponse(payload.response_url, ':sadge:, looks like you can\'t afford that! Check you bryxcoin wallet with `/balance`. To get more bryxcoin, you can reach out to Tyler for a buyin, or you can host the next bagel tab! `/tab open`');
 
   await addToCart(cartGuid!, menuItem as unknown as MenuItemSpec, user!.first_name!);
@@ -43,7 +43,9 @@ async function handleConfirmOrder(payload: any) {
   tab.order_logs += `\n${user!.first_name} ${user!.last_name} ordered ${menuItem!.name} for $${menuItem?.price}`;
   await tab.save();
 
-  await createTransactionBySlackId(user!.slack_user_id!, tab!.opener!, menuItem!.price! * 100);
+  if (user!.slack_user_id != tab.opener)
+    await createTransactionBySlackId(user!.slack_user_id!, tab!.opener!, menuItem!.price! * 100);
+
   await sendInteractionResponse(payload.response_url, "all set! you ordered: " + menuItemOid);
 }
 
