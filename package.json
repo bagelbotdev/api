@@ -3,7 +3,7 @@
   "version": "1.1.0",
   "description": "",
   "main": "dist/src/index.js",
-  "min_host_ver": "1.0.0",
+  "min_host_ver": "1.1.0",
   "scripts": {
     "build": "tsc",
     "build-menu": "ts-node menu/build-items.ts",

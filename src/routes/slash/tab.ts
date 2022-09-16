@@ -41,7 +41,7 @@ tabRouter.post("/", async (req, res) => {
       await curTab.save();
       await sendMessage(`-- <@${curTab.opener}> CLOSED THE BAGEL TAB --`);
       await sendMessage('```\nToday\'s Tab\n\n' + curTab.order_logs! + '\n```');
-      return res.end("Success! Your cart guid is `" + curTab.balsam_cart_guid);
+      return res.end("Success! Access your cart at https://www.toasttab.com/balsam-bagels/v3/?rl=1&cart=" + curTab.balsam_cart_guid);
     }
   } else {
     return res.end("Invalid option! Usage: `/tab <open|close>`");
