@@ -15,4 +15,21 @@ usersRouter.get("/", async (req, res) => {
   );
 });
 
+usersRouter.get('/:token', async (req, res) => {
+  await ensureConnected();
+
+  try {
+    const decoded: string = Buffer.from(req.params.token, 'base64').toString('ascii')
+    const userRecord = await UserModel.findById(decoded);
+
+    return res.json({
+      first_name: userRecord!.first_name,
+      last_name: userRecord!.last_name,
+      bryxcoin_address: userRecord!.bryxcoin_address,
+    });
+  } catch (ex) {
+    return res.status(400).json(ex); // assume this is the user's fault for bad input
+  }
+});
+
 export default usersRouter;
