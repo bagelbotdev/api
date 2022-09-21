@@ -6,12 +6,14 @@ import payRouter from "./pay";
 import orderRouter from "./order";
 import balanceRouter from "./balance";
 import adminRouter from "./admin";
+import identityRouter from "./identity";
 import tabRouter from "./tab";
 
 const slashRouter = Router();
 
 slashRouter.use("/register", registerRouter);
 slashRouter.use("/unregister", unregisterRoute);
+slashRouter.use("/identity", identityRouter);
 slashRouter.use("/menu", menuRouter);
 slashRouter.use('/balance', balanceRouter);
 slashRouter.use("/pay", payRouter);
