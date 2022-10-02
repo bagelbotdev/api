@@ -9,6 +9,7 @@ export default new Schema({
   bryxcoin_wallet: { type: "string" },
   bryxcoin_password: { type: "string" },
   bryxcoin_address: { type: "string" },
+  subscribed_tab_open: { type: "boolean" }
 });
 
 export interface UserSpec {
@@ -21,4 +22,5 @@ export interface UserSpec {
   bryxcoin_wallet: string;
   bryxcoin_password: string;
   bryxcoin_address: string;
+  subscribed_tab_open: boolean;
 }
