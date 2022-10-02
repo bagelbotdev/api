@@ -55,8 +55,7 @@ adminRouter.post("/", async (req, res) => {
     await tab.save();
 
     sendMessage(
-      `A bagel admin has manually reopened <@${tab.opener!}>'s order tab! They can re-close it with \`/tab close\``
-    );
+      `A bagel admin has manually reopened <@${tab.opener!}>'s order tab! They can re-close it with \`/tab close\``, '#0cdc73');
     return res.end("`/bbadmin " + cmd + "` -> OK");
   } else if (/(mine\sblock)/.test(cmd)) {
     await newBlock();

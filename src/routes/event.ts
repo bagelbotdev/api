@@ -1,5 +1,8 @@
 import { Router } from "express";
 import { searchMenuItemsByKeyword } from "../db/util";
+import { ensureConnected } from "../db/util";
+import OrderTabModel from "../db/models/OrderTab";
+import mapOrderConfirmationToBlockKit from "../slack/blockkit/mappers/confirmOrder";
 import { sendMessage } from "../slack/utils";
 const eventRouter = Router();
 
@@ -9,11 +12,7 @@ async function handleOrderMention(req: any, res: any) {
   const trigger = ORDER_TRIGGERS.find((trigger) => req.body.event.text.includes(trigger));
   const query = req.body.event.text.replace(trigger, "");
 
-  await sendMessage(
-    "Someone would like a `" +
-      ((await searchMenuItemsByKeyword(query))?.name || "no record found :(") +
-      "`"
-  );
+  // order by mention is deprecated at this point
 
   return res.end("OK");
 }

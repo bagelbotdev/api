@@ -1,7 +1,10 @@
 export default function mapOrderConfirmationToBlockKit(
   cartGuid: string,
   menuItemOid: string,
-  menuItemName: string
+  menuItemName: string,
+  menuItemPrice: number,
+  originalSearchQuery: string,
+  lunrsearchScore: number
 ) {
   return {
     blocks: [
@@ -12,18 +15,33 @@ export default function mapOrderConfirmationToBlockKit(
         type: "section",
         text: {
           type: "mrkdwn",
-          text: menuItemName,
+          text: `*${menuItemName}*\n>From query: \`/order ${originalSearchQuery}\``
         },
-        accessory: {
-          type: "button",
-          text: {
-            type: "plain_text",
-            text: "Order",
-            emoji: true,
+      },
+      {
+        type: "actions",
+        elements: [
+          {
+            type: "button",
+            text: {
+              type: "plain_text",
+              text: `Add to Tab ($${menuItemPrice})`,
+              emoji: true,
+            },
+            value: cartGuid + ":" + menuItemOid,
+            action_id: "confirm-order",
           },
-          value: cartGuid + ":" + menuItemOid,
-          action_id: "confirm-order",
-        },
+          {
+            type: "button",
+            text: {
+              type: "plain_text",
+              text: "Schedule for Next Tab",
+              emoji: true,
+            },
+            value: cartGuid + ":" + menuItemOid,
+            action_id: "schedule-order",
+          },
+        ],
       },
     ],
   };
