@@ -2,6 +2,8 @@ import randomWords from "random-words";
 import fetch from "node-fetch";
 import semver from 'semver-compare';
 
+import { min_host_ver } from '../../package.json';
+
 type Password = string;
 type Wallet = string;
 type Address = string;
@@ -61,11 +63,10 @@ export async function isHostAlive(host: string) {
 }
 
 export async function checkHostVer(host: string) {
-  const MIN_VER = '1.0.0';
 
   try {
     const res = await fetch(`https://${host}/meta/pkg`);
     const reportedVer = (await res.json()).version;
-    return semver(reportedVer, MIN_VER) != -1;
+    return semver(reportedVer, min_host_ver) != -1;
   } catch { return false }
 }

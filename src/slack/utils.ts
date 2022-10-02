@@ -9,12 +9,13 @@ export function sendInteractionResponse(responseUrl: string, content: string) {
   });
 }
 
-export function sendMessage(content: string, hidden?: boolean) {
+export function sendMessage(text: string, color: string) {
   return fetch(process.env.SLACKBOT_WEBHOOK!, {
     method: "POST",
     body: JSON.stringify({
-      text: content,
-      ephemeral: !!hidden,
+      attachments: [
+        { color, text },
+      ],
     }),
   });
 }

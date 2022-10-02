@@ -10,6 +10,7 @@ import { MenuItemSpec } from "../db/schemas/MenuItem";
 import { sendInteractionResponse } from "../slack/utils";
 import MenuItemModel from "../db/models/MenuItem";
 import OrderTabModel from "../db/models/OrderTab";
+import OrderModel from "../db/models/Order";
 
 const interactionRouter = Router();
 
@@ -17,7 +18,24 @@ const ACTION_DISPATCH: { [k: string]: (payload: any) => Promise<unknown> } = {
   "registration-submit": handleRegistrationSubmit,
   "unregistration-submit": handleUnregistrationSubmit,
   "confirm-order": handleConfirmOrder,
+  'schedule-order': handleScheduleOrder
 };
+
+async function handleScheduleOrder(payload: any) {
+  await ensureConnected();
+  const [ _, menuItemOid ] = payload.actions.at(0).value.split(':');
+
+  const user = await UserModel.findOne({ slack_user_id: payload.user.id });
+  if (!user) return sendMessage('error! I attempted to look up a user by slack_id ' + payload.user.id + ' but found no record!!', '#ff0033');
+
+  const menuItem = await MenuItemModel.findOne({ _id: menuItemOid });
+  if (!menuItem) return sendMessage('error! I attempted to look up menuitem ' + menuItemOid + ' but found no record!!', "#ff0033");
+
+  const order = new OrderModel({ user: user._id, item: menuItem._id, future: true, created: Date.now() });
+  await order.save();
+
+  return await sendInteractionResponse(payload.response_url, 'All set! You order is scheduled.');
+}
 
 async function handleConfirmOrder(payload: any) {
   await ensureConnected();
@@ -31,22 +49,26 @@ async function handleConfirmOrder(payload: any) {
   if (!tab)
     return await sendInteractionResponse(
       payload.response_url,
-      "too late! It looks like the order tab is already closed :sadge:. You can ask an admin to reopen it with `/bbadmin tab reopen <tab_id>`"
+      "It doesn't look like a tab is open right now! You can open one yourself with `/tab open`."
     );
 
   if (user!.slack_user_id != tab.opener && !await canAfford(user!.bryxcoin_address!, menuItem!.price! * 100))
     return await sendInteractionResponse(payload.response_url, ':sadge:, looks like you can\'t afford that! Check you bryxcoin wallet with `/balance`. To get more bryxcoin, you can reach out to Tyler for a buyin, or you can host the next bagel tab! `/tab open`');
 
   await addToCart(cartGuid!, menuItem as unknown as MenuItemSpec, user!.first_name!);
-  await sendMessage(`<@${user!.slack_user_id!}> ordered 1 ${menuItem?.name}`);
+  await sendMessage(`<@${user!.slack_user_id!}> ordered 1 ${menuItem?.name}`, '#EADDCA');
 
-  tab.order_logs += `\n${user!.first_name} ${user!.last_name} ordered ${menuItem!.name} for $${menuItem?.price}`;
-  await tab.save();
+  await OrderModel.create({
+    tab: tab._id,
+    user: user!._id,
+    item: menuItem!._id,
+    created: Date.now()
+  });
 
   if (user!.slack_user_id != tab.opener)
     await createTransactionBySlackId(user!.slack_user_id!, tab!.opener!, menuItem!.price! * 100);
 
-  await sendInteractionResponse(payload.response_url, "all set! you ordered: " + menuItemOid);
+  await sendInteractionResponse(payload.response_url, 'ok');
 }
 
 async function handleRegistrationSubmit(payload: any) {

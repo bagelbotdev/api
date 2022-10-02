@@ -15,16 +15,14 @@ orderRouter.post("/", async (req, res) => {
   await ensureConnected();
   const curTab = (await OrderTabModel.find({ closed: false })).shift();
 
-  if (!curTab)
-    return res.end("There is no active tab! You can open a new tab for everyone with `/tab open`");
+  const [ prefabMenuItem, score ] = await searchMenuItemsByKeyword(text);
 
-  const prefabMenuItem = await searchMenuItemsByKeyword(text);
   if (!prefabMenuItem)
     return res.end("I couldn't find any valid Menu Item with those keywords :sob:");
 
-  const cartGuid = curTab.balsam_cart_guid;
+  const cartGuid = curTab?.balsam_cart_guid ?? '<NONE>';
   return res.json(
-    mapOrderConfirmationToBlockKit(cartGuid!, prefabMenuItem._id.toString(), prefabMenuItem.name!)
+    mapOrderConfirmationToBlockKit(cartGuid!, prefabMenuItem._id!.toString(), prefabMenuItem.name, prefabMenuItem.price, text.trim(), score)
   );
 });
 

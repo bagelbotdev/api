@@ -10,6 +10,18 @@ export default function cache<P extends any[], R>(fn: (...params: P) => Promise<
   };
 }
 
+export function cacheSync<P extends any[], R extends Exclude<any, Promise<any>>>(fn: (...params: P) => R): typeof fn {
+  const invocationMap = {} as { [k: string]: R };
+
+  return function (...params: P) {
+    const thisInvocationKey = JSON.stringify(params);
+    if (typeof invocationMap[thisInvocationKey] == "undefined")
+      invocationMap[thisInvocationKey] = fn(...params);
+
+    return invocationMap[thisInvocationKey];
+  };
+}
+
 export function cacheWithTimeout<P extends any[], R>(fn: (...params: P) => Promise<R>, ttl: number): typeof fn {
   const invocationMap = {} as { [k: string]: R };
 

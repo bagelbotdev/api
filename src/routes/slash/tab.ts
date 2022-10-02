@@ -1,6 +1,11 @@
 import { Router } from "express";
-import { requestNewCart } from "../../balsam/cart";
+import { addToCart, requestNewCart } from "../../balsam/cart";
+import { canAfford, createTransactionBySlackId } from "../../coin/payment";
+import MenuItemModel from "../../db/models/MenuItem";
+import OrderModel from "../../db/models/Order";
 import OrderTabModel from "../../db/models/OrderTab";
+import UserModel from "../../db/models/User";
+import MenuItem, { MenuItemSpec } from "../../db/schemas/MenuItem";
 import registration from "../../middlewares/registration";
 import { sendMessage } from "../../slack/utils";
 
@@ -18,12 +23,51 @@ tabRouter.post("/", async (req, res) => {
       newTab.opened_at = Date.now();
       newTab.opener = req.userRecord?.slack_user_id!;
       newTab.closed = false;
-      newTab.order_logs = `Tab created by ${req.userRecord?.first_name} ${req.userRecord?.last_name}`;
       newTab.balsam_cart_guid = await requestNewCart();
 
       await newTab.save();
-      sendMessage(`-- <@${req.userRecord?.slack_user_id}> OPENED A NEW TAB --`);
-      return res.end("Success! You have opened a new bagel tab");
+
+      sendMessage(`:bagel: <@${req.userRecord?.slack_user_id}> opened a tab!`, '#0cdc73');
+      res.end(); // basic ack
+
+      // apply scheduled orders (future orders)
+
+      const futures = await OrderModel.find({ future: true });
+
+      for (let order of futures) {
+        const user = await UserModel.findById(order.user);
+        const item = await MenuItemModel.findById(order.item);
+
+        if (user?._id != req.userRecord?._id && !canAfford(user?.bryxcoin_address!, item?.price! + 20))
+          return sendMessage(
+            `Scheduled order \`${item?.name}\` for <@${user?.slack_user_id}}> was ignored due to a lack of funds.`, '#ff0033');
+
+        await addToCart(
+          newTab.balsam_cart_guid,
+          item as unknown as MenuItemSpec,
+          user?.first_name ?? ""
+        );
+
+        if (user?.slack_user_id != req.userRecord?.slack_user_id)
+          await createTransactionBySlackId(
+            user?.slack_user_id!,
+            req.userRecord?.slack_user_id!,
+            item?.price! * 100
+          );
+
+        await sendMessage(
+          `Scheduled order \`${item?.name}\` for <@${user?.slack_user_id!}> was applied!`, '#eaddca'
+        );
+
+        // convert to "resolved" order
+
+        order.tab = newTab._id;
+        order.future = false;
+
+        await order.save();
+      }
+
+      return;
     } else {
       return res.end(
         `Nope! It looks like <@${curTab.opener}>'s tab from ${new Date(
@@ -39,9 +83,23 @@ tabRouter.post("/", async (req, res) => {
     } else {
       curTab.closed = true;
       await curTab.save();
-      await sendMessage(`-- <@${curTab.opener}> CLOSED THE BAGEL TAB --`);
-      await sendMessage('```\nToday\'s Tab\n\n' + curTab.order_logs! + '\n```');
-      return res.end("Success! Access your cart at https://www.toasttab.com/balsam-bagels/v3/?rl=1&cart=" + curTab.balsam_cart_guid);
+
+      res.end(); // basic ack
+
+      const orders = await OrderModel.find({ tab: curTab._id });
+
+      let orderReport = '';
+      let totalPrice = 0;
+
+      for (let order of orders) {
+        const item = await MenuItemModel.findById(order.item);
+        const user = await UserModel.findById(order.user);
+        orderReport += `${user?.first_name + ' ' + user?.last_name} ordered ${item?.name} ($${item?.price})\n`;
+        totalPrice += item?.price ?? 0;
+      }
+
+      await sendMessage(`Bagel tab closed!\nhttp://carts.bagelbot.net/${curTab.balsam_cart_guid}\n\n` + orderReport + '\n---\nTotal: $' + totalPrice, '#cc8899');
+      return;
     }
   } else {
     return res.end("Invalid option! Usage: `/tab <open|close>`");

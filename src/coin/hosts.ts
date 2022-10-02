@@ -1,12 +1,10 @@
+import { ObjectId } from 'mongoose';
 import fetch from 'node-fetch';
 import { cacheWithTimeout } from '../db/caching';
-import { isHostAlive } from './utils';
+import HostModel from '../db/models/Host';
+import { checkHostVer, isHostAlive } from './utils';
 
-const HOST_SEEDS = [
-    'seed01-bxch.erwijet.com',
-    'seed02-bxch.erwijet.com',
-    'seed03-bxch.erwijet.com'
-];
+const HOST_SEEDS = ['tx01.bryxcoin.org', 'tx04.bryxcoin.org'];
 
 const PROTOCOL = 'https';
 
@@ -52,8 +50,8 @@ export async function getHostGraph(): Promise<HostGraphEnt[]> {
         return true;
     }, 5 * 1000);
 
-    for (let seed of HOST_SEEDS) {
-        await exploreHostRec(seed);
+    for (let host of HOST_SEEDS) {
+        await exploreHostRec(host!);
     }
 
     return hosts;
@@ -92,4 +90,20 @@ export async function registerNewHost(host: string, peerCount: number) {
     ));
 
     return peers.map(peer => peer.host);
+}
+
+export async function getRandomHostByOwner(ownerIdStr: string) {
+    const hosts = await HostModel.find({ owner_id: ownerIdStr });
+
+    const nextHost: (cur: string, rest: string[]) => Promise<string | undefined> = async (cur, rest) => {
+        if (!cur) return cur;
+        if (await checkHostVer(cur)) return cur;
+
+        const nextRest = [...rest];
+        const [ nextCur ] = nextRest.splice(Math.floor(Math.random() * nextRest.length), 1);
+
+        return await nextHost(nextCur, nextRest);
+    }
+
+    return await nextHost('', hosts.map(ent => ent.host!));
 }
