@@ -27,7 +27,15 @@ tabRouter.post("/", async (req, res) => {
 
       await newTab.save();
 
-      sendMessage(`:bagel: <@${req.userRecord?.slack_user_id}> opened a tab!`, '#0cdc73');
+      sendMessage(
+        `:bagel: <@${req.userRecord?.slack_user_id}> opened a tab!\n` +
+          (await UserModel.find({ subscribed_tab_open: true })).reduce(
+            (str, cur) => (str += `<@${cur.slack_user_id}> `),
+            ""
+          ),
+        "#0cdc73"
+      );
+
       res.end(); // basic ack
 
       // apply scheduled orders (future orders)
@@ -38,9 +46,14 @@ tabRouter.post("/", async (req, res) => {
         const user = await UserModel.findById(order.user);
         const item = await MenuItemModel.findById(order.item);
 
-        if (user?._id != req.userRecord?._id && !canAfford(user?.bryxcoin_address!, item?.price! + 20))
+        if (
+          user?._id != req.userRecord?._id &&
+          !canAfford(user?.bryxcoin_address!, item?.price! + 20)
+        )
           return sendMessage(
-            `Scheduled order \`${item?.name}\` for <@${user?.slack_user_id}}> was ignored due to a lack of funds.`, '#ff0033');
+            `Scheduled order \`${item?.name}\` for <@${user?.slack_user_id}}> was ignored due to a lack of funds.`,
+            "#ff0033"
+          );
 
         await addToCart(
           newTab.balsam_cart_guid,
@@ -56,7 +69,8 @@ tabRouter.post("/", async (req, res) => {
           );
 
         await sendMessage(
-          `Scheduled order \`${item?.name}\` for <@${user?.slack_user_id!}> was applied!`, '#eaddca'
+          `Scheduled order \`${item?.name}\` for <@${user?.slack_user_id!}> was applied!`,
+          "#eaddca"
         );
 
         // convert to "resolved" order
@@ -88,17 +102,25 @@ tabRouter.post("/", async (req, res) => {
 
       const orders = await OrderModel.find({ tab: curTab._id });
 
-      let orderReport = '';
+      let orderReport = "";
       let totalPrice = 0;
 
       for (let order of orders) {
         const item = await MenuItemModel.findById(order.item);
         const user = await UserModel.findById(order.user);
-        orderReport += `${user?.first_name + ' ' + user?.last_name} ordered ${item?.name} ($${item?.price})\n`;
+        orderReport += `${user?.first_name + " " + user?.last_name} ordered ${item?.name} ($${
+          item?.price
+        })\n`;
         totalPrice += item?.price ?? 0;
       }
 
-      await sendMessage(`Bagel tab closed!\nhttp://carts.bagelbot.net/${curTab.balsam_cart_guid}\n\n` + orderReport + '\n---\nTotal: $' + totalPrice, '#cc8899');
+      await sendMessage(
+        `Bagel tab closed!\nhttp://carts.bagelbot.net/${curTab.balsam_cart_guid}\n\n` +
+          orderReport +
+          "\n---\nTotal: $" +
+          totalPrice,
+        "#cc8899"
+      );
       return;
     }
   } else {
