@@ -21,7 +21,7 @@ meRouter.use(async (req, res, next) => {
   const parsed = JWT.decode(jwt);
   if (!parsed) return res.status(401).end();
 
-  const { tok } = parsed as { tok: string; act: string };
+  const { tok } = parsed as { tok: string };
   if (!tok) return res.status(401).end();
 
   const oid = Buffer.from(tok, "base64").toString("ascii");
@@ -80,7 +80,7 @@ meRouter.get("/tabs", async (req, res) => {
                   first_name: user?.first_name,
                   last_name: user?.last_name,
                   slack_user_id: user?.slack_user_id,
-                  profile_image_url: await getSlackProfilePhotoBySlackId(user?.slack_user_id ?? ''),
+                  profile_image_url: await getSlackProfilePhotoBySlackId(user?.slack_user_id ?? ""),
                 },
                 item_name: (await MenuItemModel.findById(ent.item))!.name ?? "not_found",
                 item_price: (await MenuItemModel.findById(ent.item))!.price ?? 0,
@@ -98,12 +98,45 @@ meRouter.get("/coin-history", async (req, res) => {
   return res.json(balanceByBlocks.filter((v, i, arr) => arr[i - 1] != v));
 });
 
-meRouter.get('/photo', async (req, res) => {
-  return res.json({ url: await getSlackProfilePhotoBySlackId(req.userRecord?.slack_user_id ?? '')});
+meRouter.get("/photo", async (req, res) => {
+  return res.json({
+    url: await getSlackProfilePhotoBySlackId(req.userRecord?.slack_user_id ?? ""),
+  });
 });
 
 meRouter.get("/hosts", async (req, res) => {
   return res.json(await HostModel.find({ owner_id: req.userRecord?._id.toString() }));
+});
+
+meRouter.get("/notifications", async (req, res) => {
+  return res.json({
+    TAB_OPEN: !!req.userRecord?.subscribed_tab_open,
+  });
+});
+
+meRouter.put("/notifications", async (req, res) => {
+  const { events } = req.body;
+
+  function isArr(sample: any): sample is string[] {
+    return (
+      typeof sample?.length == "number" &&
+      (typeof sample.at(0) == "undefined" || typeof sample.at(0) == "string")
+    );
+  }
+
+  if (!isArr(events)) return res.status(400).end("missing string array in body: events");
+  const subToTabOpen = events.includes("TAB_OPEN");
+
+  //
+
+  const updateOpRes = await UserModel.updateOne(req.userRecord, {
+    subscribed_tab_open: subToTabOpen,
+  });
+
+  res.json({
+    user: req.userRecord?._id,
+    update_operation: updateOpRes,
+  });
 });
 
 export default meRouter;
