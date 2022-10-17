@@ -40,22 +40,26 @@ adminRouter.post("/", async (req, res) => {
 
     exit(1);
   } else if (/(tab\sreopen)/.test(cmd)) {
-    const tab = (await OrderTabModel.aggregate([
-      {
-        $sort: {
-          opened_at: -1,
+    const tab = (
+      await OrderTabModel.aggregate([
+        {
+          $sort: {
+            opened_at: -1,
+          },
         },
-      },
-      {
-        $limit: 1,
-      },
-    ])).at(0);
+        {
+          $limit: 1,
+        },
+      ])
+    ).at(0);
 
     tab.closed = false;
     await tab.save();
 
     sendMessage(
-      `A bagel admin has manually reopened <@${tab.opener!}>'s order tab! They can re-close it with \`/tab close\``, '#0cdc73');
+      `A bagel admin has manually reopened <@${tab.opener!}>'s order tab! They can re-close it with \`/tab close\``,
+      "#0cdc73"
+    );
     return res.end("`/bbadmin " + cmd + "` -> OK");
   } else if (/(mine\sblock)/.test(cmd)) {
     await newBlock();

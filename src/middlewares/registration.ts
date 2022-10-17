@@ -18,14 +18,9 @@ registration.use(async (req, res, next) => {
   await ensureConnected();
   const { user_id } = req.body;
 
-  const userRecord = (
-    await UserModel.where({ slack_user_id: user_id })
-  ).shift();
+  const userRecord = (await UserModel.where({ slack_user_id: user_id })).shift();
 
-  if (!userRecord)
-    return res.end(
-      "Unregistered. Use `/register` to get started with bagelbot"
-    );
+  if (!userRecord) return res.end("Unregistered. Use `/register` to get started with bagelbot");
 
   req.userRecord = userRecord as UserSpec;
 

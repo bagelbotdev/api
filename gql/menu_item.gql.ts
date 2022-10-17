@@ -1,10 +1,7 @@
 import { gql } from "@urql/core";
 
 export const MENU_ITEM_DETAILS_QUERY = gql`
-  query MENU_ITEM_DETAILS(
-    $input: MenuItemDetailsInput!
-    $nestingLevel: Int = 10
-  ) {
+  query MENU_ITEM_DETAILS($input: MenuItemDetailsInput!, $nestingLevel: Int = 10) {
     menuItemDetails(input: $input) {
       description
       name

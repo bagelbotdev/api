@@ -17,7 +17,7 @@ usersRouter.get("/", async (req, res) => {
         last_name: ent.last_name,
         slack_user_id: ent.slack_user_id,
         bryxcoin_address: ent.bryxcoin_address,
-        slack_profile_photo: await getSlackProfilePhotoBySlackId(ent.slack_user_id!)
+        slack_profile_photo: await getSlackProfilePhotoBySlackId(ent.slack_user_id!),
       }))
     )
   );

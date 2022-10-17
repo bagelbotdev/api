@@ -9,9 +9,9 @@ export default new Schema({
 });
 
 export interface OrderTabSpec {
-  opener: string,
-  opened_at: number,
-  order_logs: string,
-  balsam_cart_guid: string,
-  closed: boolean
+  opener: string;
+  opened_at: number;
+  order_logs: string;
+  balsam_cart_guid: string;
+  closed: boolean;
 }

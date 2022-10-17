@@ -1,9 +1,6 @@
 import { BalsamGQL } from "../../../../@types/balsamgql";
 
-export default function mapMenuResToBlockKit(
-  selectedMenu: string,
-  o: BalsamGQL.Menu[]
-) {
+export default function mapMenuResToBlockKit(selectedMenu: string, o: BalsamGQL.Menu[]) {
   return o
     .filter(({ name }) => name == selectedMenu)
     .flatMap((menu) => {

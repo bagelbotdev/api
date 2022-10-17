@@ -1,62 +1,62 @@
 {
-	"blocks": [
-		{
-			"type": "context",
-			"elements": [
-				{
-					"type": "plain_text",
-					"text": "please note that all transactions on the BryxCoin network will incur a 20 BRYX fee, subtracted from the payer's wallet in addition to the amount specified in the transfer.",
-					"emoji": true
-				}
-			]
-		},
-		{
-			"type": "input",
-			"element": {
-				"type": "plain_text_input",
-				"action_id": "plain_text_input-action"
-			},
-			"label": {
-				"type": "plain_text",
-				"text": "Bryxcoin Quantity to Send (100 BRYX = $1)",
-				"emoji": true
-			}
-		},
-		{
-			"type": "section",
-			"text": {
-				"type": "mrkdwn",
-				"text": "User to receive transaction"
-			},
-			"accessory": {
-				"type": "users_select",
-				"placeholder": {
-					"type": "plain_text",
-					"text": "Select a user",
-					"emoji": true
-				},
-				"action_id": "users_select-action"
-			}
-		},
-		{
-			"type": "divider"
-		},
-		{
-			"type": "section",
-			"text": {
-				"type": "mrkdwn",
-				"text": " "
-			},
-			"accessory": {
-				"type": "button",
-				"text": {
-					"type": "plain_text",
-					"text": "Send",
-					"emoji": true
-				},
-				"value": "click_me_123",
-				"action_id": "button-action"
-			}
-		}
-	]
+  "blocks": [
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "plain_text",
+          "text": "please note that all transactions on the BryxCoin network will incur a 20 BRYX fee, subtracted from the payer's wallet in addition to the amount specified in the transfer.",
+          "emoji": true
+        }
+      ]
+    },
+    {
+      "type": "input",
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "plain_text_input-action"
+      },
+      "label": {
+        "type": "plain_text",
+        "text": "Bryxcoin Quantity to Send (100 BRYX = $1)",
+        "emoji": true
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "User to receive transaction"
+      },
+      "accessory": {
+        "type": "users_select",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Select a user",
+          "emoji": true
+        },
+        "action_id": "users_select-action"
+      }
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": " "
+      },
+      "accessory": {
+        "type": "button",
+        "text": {
+          "type": "plain_text",
+          "text": "Send",
+          "emoji": true
+        },
+        "value": "click_me_123",
+        "action_id": "button-action"
+      }
+    }
+  ]
 }

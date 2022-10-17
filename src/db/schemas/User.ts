@@ -9,7 +9,7 @@ export default new Schema({
   bryxcoin_wallet: { type: "string" },
   bryxcoin_password: { type: "string" },
   bryxcoin_address: { type: "string" },
-  subscribed_tab_open: { type: "boolean" }
+  subscribed_tab_open: { type: "boolean" },
 });
 
 export interface UserSpec {

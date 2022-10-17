@@ -1,8 +1,8 @@
 import randomWords from "random-words";
 import fetch from "node-fetch";
-import semver from 'semver-compare';
+import semver from "semver-compare";
 
-import { min_host_ver } from '../../package.json';
+import { min_host_ver } from "../../package.json";
 
 type Password = string;
 type Wallet = string;
@@ -52,21 +52,24 @@ export async function newCoinUser(): Promise<[Password, Wallet, Address]> {
 export async function isHostAlive(host: string) {
   try {
     const res = await fetch(`https://${host}/blockchain`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-	accept: 'text/html'
-      }
+        accept: "text/html",
+      },
     });
 
     return res.status - 400 < 0; // status code is not in the 4XX range or above
-  } catch { return false; }
+  } catch {
+    return false;
+  }
 }
 
 export async function checkHostVer(host: string) {
-
   try {
     const res = await fetch(`https://${host}/meta/pkg`);
     const reportedVer = (await res.json()).version;
     return semver(reportedVer, min_host_ver) != -1;
-  } catch { return false }
+  } catch {
+    return false;
+  }
 }

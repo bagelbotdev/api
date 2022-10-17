@@ -15,34 +15,34 @@ export const getMenuItems = cache(async () => {
   return await MenuItemModel.find({});
 });
 
-export const searchMenuItemsByKeyword: (
-  queryExpr: string
-) => Promise<[any | null, number]> = cache(async (queryExpr) => {
-  const items = await getMenuItems();
+export const searchMenuItemsByKeyword: (queryExpr: string) => Promise<[any | null, number]> = cache(
+  async (queryExpr) => {
+    const items = await getMenuItems();
 
-  const index = elasticlunr<{ name: string; keywords: string; _id: string }>();
-  index.setRef("_id");
-  index.addField("name");
-  index.addField("keywords");
+    const index = elasticlunr<{ name: string; keywords: string; _id: string }>();
+    index.setRef("_id");
+    index.addField("name");
+    index.addField("keywords");
 
-  items.forEach((item) =>
-    index.addDoc({
-      _id: item._id.toString(),
-      name: item.name!,
-      keywords: item.keywords!.join(" "),
-    })
-  );
+    items.forEach((item) =>
+      index.addDoc({
+        _id: item._id.toString(),
+        name: item.name!,
+        keywords: item.keywords!.join(" "),
+      })
+    );
 
-  const searchResults = index.search(queryExpr, {
-    fields: {
-      keywords: { boost: 2 },
-      name: { boost: 1 },
-    },
-  }) as [{ score: number; ref: string }];
+    const searchResults = index.search(queryExpr, {
+      fields: {
+        keywords: { boost: 2 },
+        name: { boost: 1 },
+      },
+    }) as [{ score: number; ref: string }];
 
-  const topSearchResultIndicator = searchResults.filter(({ score }) => score >= 1).shift();
-  return [
-    await MenuItemModel.findById(topSearchResultIndicator?.ref),
-    topSearchResultIndicator?.score ?? 0,
-  ];
-});
+    const topSearchResultIndicator = searchResults.filter(({ score }) => score >= 1).shift();
+    return [
+      await MenuItemModel.findById(topSearchResultIndicator?.ref),
+      topSearchResultIndicator?.score ?? 0,
+    ];
+  }
+);

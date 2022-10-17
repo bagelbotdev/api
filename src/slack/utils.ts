@@ -13,9 +13,7 @@ export function sendMessage(text: string, color: string) {
   return fetch(process.env.SLACKBOT_WEBHOOK!, {
     method: "POST",
     body: JSON.stringify({
-      attachments: [
-        { color, text },
-      ],
+      attachments: [{ color, text }],
     }),
   });
 }

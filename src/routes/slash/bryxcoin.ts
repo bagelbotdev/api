@@ -16,11 +16,10 @@ bryxcoinRouter.post("/", async (req, res) => {
   if (/send\s*$/.test(cmd)) {
     res.json(specifyPayment);
   } else if (/mine$/.test(cmd)) {
-
-    const host = await getRandomHostByOwner(req.userRecord?._id.toString() ?? '');
+    const host = await getRandomHostByOwner(req.userRecord?._id.toString() ?? "");
     console.log(req.userRecord?._id.toString(), host);
 
-    return res.end(host || `:sadge: It doesn't look like you have any hosts registered!`)
+    return res.end(host || `:sadge: It doesn't look like you have any hosts registered!`);
   }
 
   return res.end(

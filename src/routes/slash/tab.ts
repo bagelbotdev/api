@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { addToCart, requestNewCart } from "../../balsam/cart";
-import { canAfford, createTransactionBySlackId } from "../../coin/payment";
+import { canAfford, createTransactionBySlackId, getBalance } from "../../coin/payment";
 import MenuItemModel from "../../db/models/MenuItem";
 import OrderModel from "../../db/models/Order";
 import OrderTabModel from "../../db/models/OrderTab";
@@ -17,7 +17,7 @@ tabRouter.post("/", async (req, res) => {
   const { text } = req.body;
   const curTab = (await OrderTabModel.find({ closed: false })).shift();
 
-  if (text.toLowerCase() == "open") {
+  if (text.toLowerCase().includes("open")) {
     if (curTab == null) {
       const newTab = new OrderTabModel();
       newTab.opened_at = Date.now();
@@ -29,10 +29,12 @@ tabRouter.post("/", async (req, res) => {
 
       sendMessage(
         `:bagel: <@${req.userRecord?.slack_user_id}> opened a tab!\n` +
-          (await UserModel.find({ subscribed_tab_open: true })).reduce(
-            (str, cur) => (str += `<@${cur.slack_user_id}> `),
-            ""
-          ),
+          (text.includes("noping")
+            ? ""
+            : (await UserModel.find({ subscribed_tab_open: true })).reduce(
+                (str, cur) => (str += `<@${cur.slack_user_id}> `),
+                ""
+              )),
         "#0cdc73"
       );
 
@@ -48,18 +50,17 @@ tabRouter.post("/", async (req, res) => {
 
         if (
           user?._id != req.userRecord?._id &&
-          !canAfford(user?.bryxcoin_address!, item?.price! + 20)
-        )
-          return sendMessage(
-            `Scheduled order \`${item?.name}\` for <@${user?.slack_user_id}}> was ignored due to a lack of funds.`,
+          !(await canAfford(user?.bryxcoin_address!, item?.price! * 100))
+        ) {
+          console.log("failed");
+          await sendMessage(
+            `Scheduled order \`${item?.name}\` for <@${user?.slack_user_id}> was ignored due to a lack of funds.`,
             "#ff0033"
           );
+          continue;
+        }
 
-        await addToCart(
-          newTab.balsam_cart_guid,
-          item as unknown as MenuItemSpec,
-          user?.first_name ?? ""
-        );
+        console.log("passed");
 
         if (user?.slack_user_id != req.userRecord?.slack_user_id)
           await createTransactionBySlackId(
@@ -67,6 +68,12 @@ tabRouter.post("/", async (req, res) => {
             req.userRecord?.slack_user_id!,
             item?.price! * 100
           );
+
+        await addToCart(
+          newTab.balsam_cart_guid,
+          item as unknown as MenuItemSpec,
+          user?.first_name ?? ""
+        );
 
         await sendMessage(
           `Scheduled order \`${item?.name}\` for <@${user?.slack_user_id!}> was applied!`,

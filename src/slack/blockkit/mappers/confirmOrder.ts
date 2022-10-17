@@ -15,7 +15,7 @@ export default function mapOrderConfirmationToBlockKit(
         type: "section",
         text: {
           type: "mrkdwn",
-          text: `*${menuItemName}*\n>From query: \`/order ${originalSearchQuery}\``
+          text: `*${menuItemName}*\n>From query: \`/order ${originalSearchQuery}\``,
         },
       },
       {

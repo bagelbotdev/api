@@ -15,14 +15,21 @@ orderRouter.post("/", async (req, res) => {
   await ensureConnected();
   const curTab = (await OrderTabModel.find({ closed: false })).shift();
 
-  const [ prefabMenuItem, score ] = await searchMenuItemsByKeyword(text);
+  const [prefabMenuItem, score] = await searchMenuItemsByKeyword(text);
 
   if (!prefabMenuItem)
     return res.end("I couldn't find any valid Menu Item with those keywords :sob:");
 
-  const cartGuid = curTab?.balsam_cart_guid ?? '<NONE>';
+  const cartGuid = curTab?.balsam_cart_guid ?? "<NONE>";
   return res.json(
-    mapOrderConfirmationToBlockKit(cartGuid!, prefabMenuItem._id!.toString(), prefabMenuItem.name, prefabMenuItem.price, text.trim(), score)
+    mapOrderConfirmationToBlockKit(
+      cartGuid!,
+      prefabMenuItem._id!.toString(),
+      prefabMenuItem.name,
+      prefabMenuItem.price,
+      text.trim(),
+      score
+    )
   );
 });
 
