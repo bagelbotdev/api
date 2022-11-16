@@ -9,7 +9,8 @@ type Wallet = string;
 type Address = string;
 
 export function getCoinEndpoint(path: string) {
-  return `${process.env.COIN_ENDPOINT}/${path}`;
+  if (path.includes('operator/wallets')) return `https://tx01.bxcn.org/${path}`;
+  else return `${process.env.COIN_ENDPOINT}/${path}`;
 }
 
 export function createNewPassword(): Password {
@@ -49,19 +50,23 @@ export async function newCoinUser(): Promise<[Password, Wallet, Address]> {
   return [password, wallet, address];
 }
 
-export async function isHostAlive(host: string) {
-  try {
-    const res = await fetch(`https://${host}/blockchain`, {
-      method: "GET",
-      headers: {
-        accept: "text/html",
-      },
-    });
+export function isHostAlive(host: string): Promise<boolean> {
+  return new Promise(async (resolve, reject) => {
+    setTimeout(() => resolve(false), 1000); // only wait for 1 sec
 
-    return res.status - 400 < 0; // status code is not in the 4XX range or above
-  } catch {
-    return false;
-  }
+    try {
+      const res = await fetch(`https://${host}/blockchain`, {
+        method: "GET",
+        headers: {
+          accept: "text/html",
+        },
+      });
+
+      resolve(res.status - 400 < 0); // status code is not in the 4XX range or above
+    } catch {
+      resolve(false);
+    }
+  });
 }
 
 export async function checkHostVer(host: string) {

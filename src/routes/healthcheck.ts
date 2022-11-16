@@ -4,7 +4,7 @@ import { getItem } from "../balsam/items";
 const healthcheckRouter = Router();
 
 healthcheckRouter.get("/", async (req, res) => {
-  res.end("OK 1");
+  res.end("ok");
 });
 
 export default healthcheckRouter;

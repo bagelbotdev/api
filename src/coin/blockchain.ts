@@ -11,3 +11,8 @@ export function newBlock() {
     }),
   });
 }
+
+export async function getUnconfirmedTxs() {
+  const res = await fetch(getCoinEndpoint('blockchain/transactions'));
+  return await res.json();
+}

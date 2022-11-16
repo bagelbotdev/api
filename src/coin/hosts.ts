@@ -2,9 +2,7 @@ import { ObjectId } from "mongoose";
 import fetch from "node-fetch";
 import { cacheWithTimeout } from "../db/caching";
 import HostModel from "../db/models/Host";
-import { checkHostVer, isHostAlive } from "./utils";
-
-const HOST_SEEDS = ["tx01.bryxcoin.org", "tx04.bryxcoin.org"];
+import { checkHostVer, getCoinEndpoint, isHostAlive } from "./utils";
 
 const PROTOCOL = "https";
 
@@ -35,7 +33,6 @@ export async function getDirectPeers(host: string): Promise<string[]> {
 export async function getHostGraph(): Promise<HostGraphEnt[]> {
   const hosts = [] as HostGraphEnt[];
 
-  // result cached for 5 seconds
   const exploreHostRec = cacheWithTimeout(async (host: string) => {
     if (hosts.some((ent) => ent.host == host) || !(await isHostAlive(host))) return;
     const edges = await getDirectPeers(host);
@@ -50,10 +47,13 @@ export async function getHostGraph(): Promise<HostGraphEnt[]> {
     }
 
     return true;
-  }, 5 * 1000);
+  }, 60 * 1000);
 
-  for (let host of HOST_SEEDS) {
-    await exploreHostRec(host!);
+  const seedRes = await fetch(getCoinEndpoint('node/peers'));
+  const HOST_SEEDS = await seedRes.json() as { url: string }[];
+
+  for (let { url } of HOST_SEEDS) {
+    await exploreHostRec(url);
   }
 
   return hosts;

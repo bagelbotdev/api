@@ -8,7 +8,7 @@ import OrderModel from "../../db/models/Order";
 import { ensureConnected } from "../../db/util";
 import OrderTabModel from "../../db/models/OrderTab";
 import MenuItemModel from "../../db/models/MenuItem";
-import { getBalanceOverTime } from "../../coin/payment";
+import { createTransactionBySlackId, getBalanceOverTime } from "../../coin/payment";
 import { getSlackProfilePhotoBySlackId } from "../../slack/api/profiles";
 
 const meRouter = Router();
@@ -42,6 +42,15 @@ meRouter.use(async (req, res, next) => {
   req.userRecord = userRecord as UserSpec;
 
   next();
+});
+
+meRouter.get("/", async (req, res) => {
+  return res.json({
+    profile_image_url: await getSlackProfilePhotoBySlackId(req.userRecord?.slack_user_id!),
+    first_name: req.userRecord?.first_name,
+    last_name: req.userRecord?.last_name,
+    slack_user_id: req.userRecord?.slack_user_id,
+  });
 });
 
 meRouter.get("/orders", async (req, res) => {
@@ -98,12 +107,6 @@ meRouter.get("/coin-history", async (req, res) => {
   return res.json(balanceByBlocks.filter((v, i, arr) => arr[i - 1] != v));
 });
 
-meRouter.get("/photo", async (req, res) => {
-  return res.json({
-    url: await getSlackProfilePhotoBySlackId(req.userRecord?.slack_user_id ?? ""),
-  });
-});
-
 meRouter.get("/hosts", async (req, res) => {
   return res.json(await HostModel.find({ owner_id: req.userRecord?._id.toString() }));
 });
@@ -137,6 +140,18 @@ meRouter.put("/notifications", async (req, res) => {
     user: req.userRecord?._id,
     update_operation: updateOpRes,
   });
+});
+
+meRouter.post("/tx", async (req, res) => {
+  const { address, amount } = req.body;
+  if (!address|| !amount) return res.status(400).end("invalid body");
+
+  const payeeUserRecord = await UserModel.findOne({ bryxcoin_address: address });
+  if (!payeeUserRecord) return res.status(404).end("no payee found");
+
+  return res.json(
+    await createTransactionBySlackId(req.userRecord?.slack_user_id!, payeeUserRecord.slack_user_id!, amount)
+  );
 });
 
 export default meRouter;

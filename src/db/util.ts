@@ -2,12 +2,11 @@ import mongoose from "mongoose";
 import cache from "./caching";
 import elasticlunr from "elasticlunr";
 import MenuItemModel from "./models/MenuItem";
-import { MenuItemSpec } from "./schemas/MenuItem";
 
 export async function ensureConnected() {
   const PRIMARY_CONN_STR = process.env.MONGO_URL;
 
-  await mongoose.connect(PRIMARY_CONN_STR!, { ssl: false, authSource: "admin" });
+  await mongoose.connect(PRIMARY_CONN_STR!, { ssl: true });
 }
 
 export const getMenuItems = cache(async () => {
@@ -15,7 +14,7 @@ export const getMenuItems = cache(async () => {
   return await MenuItemModel.find({});
 });
 
-export const searchMenuItemsByKeyword: (queryExpr: string) => Promise<[any | null, number]> = cache(
+export const searchMenuItemsByKeyword: (queryExpr: string) => Promise<{ref: string, score: number}[]> = cache(
   async (queryExpr) => {
     const items = await getMenuItems();
 
@@ -39,10 +38,6 @@ export const searchMenuItemsByKeyword: (queryExpr: string) => Promise<[any | nul
       },
     }) as [{ score: number; ref: string }];
 
-    const topSearchResultIndicator = searchResults.filter(({ score }) => score >= 1).shift();
-    return [
-      await MenuItemModel.findById(topSearchResultIndicator?.ref),
-      topSearchResultIndicator?.score ?? 0,
-    ];
+    return searchResults.filter(({ score }) => score >= 1);
   }
 );

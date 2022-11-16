@@ -2,13 +2,8 @@ FROM docker.io/node:16
 WORKDIR /app
 
 COPY package.json /app/package.json
+COPY node_modules/ /app/node_modules
+COPY dist/ /app/dist
 
-RUN npm install
 
-COPY tsconfig.json /app/tsconfig.json
-
-COPY ./src /app/src
-COPY ./gql /app/gql
-COPY ./@types /app/@types
-
-CMD ["npm", "start"]
+CMD ["node", "dist/src/index.js"]

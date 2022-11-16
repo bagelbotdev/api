@@ -4,7 +4,7 @@ import UserModel from "../db/models/User";
 import { cacheSync } from "../db/caching";
 
 export async function canAfford(address: string, coinQuantity: number) {
-  return (await getBalance(address)) >= coinQuantity;
+  return (await getBalance(address)) > coinQuantity + 20; // 20 bxcn fee per tx, and 1 bxcn must be in the wallet at all times
 }
 
 export async function getBalance(address: string) {
