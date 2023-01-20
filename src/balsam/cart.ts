@@ -10,41 +10,49 @@ export async function getCart(cartGuid: string) {
 }
 
 export async function requestNewCart() {
-    const res = await performBalsamMutation(ADD_ITEM_TO_CART, {
-      input: {
-        createCartInput: {
-          restaurantGuid: "7fb7d7c2-7204-4fbe-ae03-ce2324ecab68",
-          orderSource: "ONLINE",
-          cartFulfillmentInput: {
-            fulfillmentDateTime: null,
-            fulfillmentType: "ASAP",
-            diningOptionBehavior: "TAKE_OUT",
-          },
-        },
-        selection: {
-          itemGuid: "300383f2-6b47-49c8-85ee-7af133061c6e",
-          itemGroupGuid: "7bc2c647-4ef9-4f99-b940-272c62e6f71c",
-          quantity: 1,
-          modifierGroups: [
-            {
-              guid: "3bd023bc-0cac-41e1-84e8-847aa0cbf2c0",
-              modifiers: [
-                {
-                  itemGroupGuid: "300383f2-6b47-49c8-85ee-7af133061c6e",
-                  itemGuid: "116ad1c9-9ac5-46be-9b01-a149a91f114a",
-                  quantity: 1,
-                  modifierGroups: [],
-                },
-              ],
-            },
-          ],
-          specialInstructions: "",
-          itemMasterId: "400000000008715250"
+  const res = await performBalsamMutation(ADD_ITEM_TO_CART, {
+    input: {
+      createCartInput: {
+        restaurantGuid: "7fb7d7c2-7204-4fbe-ae03-ce2324ecab68",
+        orderSource: "ONLINE",
+        // cartFulfillmentInput: {
+        //   fulfillmentDateTime: "2023-01-21T13:15:00.000Z",
+        //   fulfillmentType: "FUTURE",
+        //   diningOptionBehavior: "TAKE_OUT",
+        // },
+        cartFulfillmentInput: {
+          fulfillmentDateTime: null,
+          fulfillmentType: "ASAP",
+          diningOptionBehavior: "TAKE_OUT",
         },
       },
-    });
+      // Single Bagel
+      selection: {
+        itemGuid: "7bc2c647-4ef9-4f99-b940-272c62e6f71c",
+        itemGroupGuid: "300383f2-6b47-49c8-85ee-7af133061c6e",
+        quantity: 1,
+        modifierGroups: [
+          // Plain (vegan)
+          {
+            guid: "3bd023bc-0cac-41e1-84e8-847aa0cbf2c0",
+            modifiers: [
+              {
+                itemGuid: "116ad1c9-9ac5-46be-9b01-a149a91f114a",
+                itemGroupGuid: "300383f2-6b47-49c8-85ee-7af133061c6e",
+                quantity: 1,
+                modifierGroups: [],
+              },
+            ],
+          },
+        ],
+        specialInstructions: "",
+        itemMasterId: "400000000008715250",
+      },
+    },
+  });
 
   console.log({ status: res });
+  console.log(res.data.addItemToCartV2);
   const cartGuid = res.data.addItemToCartV2.cart.guid;
 
   const selectedEntry = (await queryFromBalsam(GET_CART, { guid: cartGuid })).data.cartV2.cart.order
