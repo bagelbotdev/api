@@ -6,7 +6,7 @@ import { newCoinUser } from "../coin/utils";
 import { addToCart } from "../balsam/cart";
 import { getItem } from "../balsam/items";
 import { sendMessage } from "../slack/utils";
-import { MenuItemSpec } from "../db/schemas/MenuItem";
+import { MenuItemSpec, previewItem } from "../db/schemas/MenuItem";
 import mapConfigureOrderToBlockKit from "../slack/blockkit/mappers/configureOrder";
 
 import { sendInteractionResponse } from "../slack/utils";
@@ -55,11 +55,13 @@ function generateItem(
   slackState: SlackState
 ): MenuItemSpec {
   const menuItem: MenuItemSpec = {
+    name: item.name,
     price: item.price,
     balsam_item_guid: item.itemGuid,
     balsam_group_guid: item.itemGroupGuid,
     balsam_modifiers: [],
   };
+  const receiptOptions = [];
   for (const groupGuid in slackState.values) {
     const modifierGroup = item.modifierGroups.find(
       (modifierGroup) => modifierGroup.guid == groupGuid
@@ -89,11 +91,13 @@ function generateItem(
         modifier_group_guid: option.itemGroupGuid || item.itemGroupGuid,
         modifier_guid: option.itemGuid,
       });
+      receiptOptions.push(option.name);
       if (modifierGroup?.pricingMode == "ADJUSTS_PRICE") {
         menuItem.price += option.price;
       }
     }
   }
+  menuItem.receipt_name = `*${item.name}* (${receiptOptions.join(", ")})`;
   return menuItem;
 }
 
@@ -108,7 +112,7 @@ async function handleConfigureOrder(payload: any) {
     method: "POST",
     body: JSON.stringify({
       replace_original: true,
-      ...mapConfigureOrderToBlockKit(cartGuid, item, generateItem(item, payload.state).price),
+      ...mapConfigureOrderToBlockKit(cartGuid, item, generateItem(item, payload.state)),
     }),
   });
 }
@@ -157,7 +161,7 @@ async function handleConfirmOrder(payload: any) {
 
   if (
     user!.slack_user_id != tab.opener &&
-    !(await canAfford(user!.bryxcoin_address!, menuItem!.price! * 100))
+    !(await canAfford(user!.bryxcoin_address!, menuItem.price! * 100))
   )
     return await sendInteractionResponse(
       payload.response_url,
@@ -165,7 +169,7 @@ async function handleConfirmOrder(payload: any) {
     );
 
   await addToCart(cartGuid!, menuItem, user!.first_name!);
-  await sendMessage(`<@${user!.slack_user_id!}> ordered ${menuItem?.name}`, "#EADDCA");
+  await sendMessage(`<@${user!.slack_user_id!}> ordered ${previewItem(menuItem)}`, "#EADDCA");
 
   await OrderModel.create({
     tab: tab._id,
@@ -175,7 +179,7 @@ async function handleConfirmOrder(payload: any) {
   });
 
   if (user!.slack_user_id != tab.opener)
-    await createTransactionBySlackId(user!.slack_user_id!, tab!.opener!, menuItem!.price! * 100);
+    await createTransactionBySlackId(user!.slack_user_id!, tab!.opener!, menuItem.price! * 100);
 
   await sendInteractionResponse(payload.response_url, "ok");
 }

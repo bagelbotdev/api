@@ -1,9 +1,10 @@
 import { getItem } from "../../../balsam/items";
+import { MenuItemSpec } from "../../../db/schemas/MenuItem";
 
 export default function mapConfigureOrderToBlockKit(
   cartGuid: string,
   item: Awaited<ReturnType<typeof getItem>>,
-  price: number = item.price
+  menuItem: MenuItemSpec
 ) {
   return {
     blocks: [
@@ -14,7 +15,7 @@ export default function mapConfigureOrderToBlockKit(
         type: "section",
         text: {
           type: "mrkdwn",
-          text: `Configuring ${item.name}...`,
+          text: `Configuring ${menuItem.name || item.name}...`,
         },
       },
       ...item.modifierGroups
@@ -23,6 +24,21 @@ export default function mapConfigureOrderToBlockKit(
           // Ignore nested modifiers, they suck!
           const modifiers = group.modifiers.filter((modifier) => !modifier.modifierGroups.length);
           if (!modifiers.length) return null;
+          const options = modifiers.map((modifier) => ({
+            text: {
+              type: "plain_text",
+              text: modifier.name + (modifier.price ? ` (+$${modifier.price.toFixed(2)})` : ""),
+            },
+            value: modifier.itemGuid,
+          }));
+          const prefabOption = menuItem.balsam_modifiers.find(
+            (modifier) => modifier.modifier_set_guid == group.guid
+          );
+          const initialOptions = prefabOption
+            ? prefabOption.modifiers.map(
+              (modifier) => options.find((option) => option.value == modifier.modifier_guid)!
+            )
+            : [];
           return {
             type: "section",
             block_id: group.guid,
@@ -39,17 +55,16 @@ export default function mapConfigureOrderToBlockKit(
                 group.guid,
               type: isSingleSelect ? "static_select" : "multi_static_select",
               max_selected_items: (!isSingleSelect && group.maxSelections) || undefined,
+              [isSingleSelect ? "initial_option" : "initial_options"]: initialOptions.length
+                ? isSingleSelect
+                  ? initialOptions[0]
+                  : initialOptions
+                : undefined,
               placeholder: {
                 type: "plain_text",
                 text: isSingleSelect ? group.name : "Select",
               },
-              options: modifiers.map((modifier) => ({
-                text: {
-                  type: "plain_text",
-                  text: modifier.name + (modifier.price ? ` (+$${modifier.price.toFixed(2)})` : ""),
-                },
-                value: modifier.itemGuid,
-              })),
+              options,
             },
           };
         })
@@ -61,7 +76,7 @@ export default function mapConfigureOrderToBlockKit(
             type: "button",
             text: {
               type: "plain_text",
-              text: `Add to Tab ($${price.toFixed(2)})`,
+              text: `Add to Tab ($${menuItem.price.toFixed(2)})`,
               emoji: true,
             },
             value: cartGuid + ":" + item.itemGuid + ":" + item.itemGroupGuid,

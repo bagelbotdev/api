@@ -12,8 +12,13 @@ const BalsamItemModifierSet = new Schema<MenuItemSpec["balsam_modifiers"][number
   modifiers: [{ type: BalsamItemModifier }],
 });
 
+export function previewItem(item: MenuItemSpec): string {
+  return item.receipt_name || item.name;
+}
+
 export default new Schema<MenuItemSpec>({
-  name: { type: String, required: false },
+  name: { type: String },
+  receipt_name: { type: String, required: false },
   keywords: [{ type: Schema.Types.String, required: false }],
   balsam_item_guid: { type: String },
   balsam_group_guid: { type: String },
@@ -22,7 +27,8 @@ export default new Schema<MenuItemSpec>({
 });
 
 export interface MenuItemSpec {
-  name?: string;
+  name: string;
+  receipt_name?: string;
   price: number;
   keywords?: string[];
   balsam_item_guid: string;

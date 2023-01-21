@@ -21,17 +21,7 @@ orderRouter.post("/", async (req, res) => {
 
   const results = await searchMenuItemsByKeyword(text);
 
-  const wigglyItem = await getItem(
-    "06a77603-e9cb-49ff-a26b-c9d93ffb84d6",
-    "0c8b6d60-f015-48b4-90b9-d19b11c07f0b"
-  );
-
-  console.log(wigglyItem);
-
   const cartGuid = curTab?.balsam_cart_guid ?? "<NONE>";
-  const blockKit = mapConfigureOrderToBlockKit(cartGuid, wigglyItem);
-  fs.writeFileSync("/tmp/wiggler.json", JSON.stringify(blockKit, null, 2));
-  return res.json(blockKit);
 
   if (text.trim().split(" ").shift() == "dryrun") {
     return res.end(
@@ -46,18 +36,13 @@ orderRouter.post("/", async (req, res) => {
 
   const bestResult = results.shift();
 
-  const prefabMenuItem = await MenuItemModel.findById(bestResult!.ref);
+  const prefabMenuItem = (await MenuItemModel.findById(bestResult!.ref))!;
+  const item = await getItem(prefabMenuItem.balsam_item_guid, prefabMenuItem.balsam_group_guid);
 
-  return res.json(
-    mapOrderConfirmationToBlockKit(
-      cartGuid!,
-      prefabMenuItem!._id!.toString(),
-      prefabMenuItem!.name!,
-      prefabMenuItem!.price!,
-      text.trim(),
-      bestResult!.score
-    )
-  );
+  const blockKit = mapConfigureOrderToBlockKit(cartGuid, item, prefabMenuItem);
+  // fs.writeFileSync("/tmp/blockkit_broke.json", JSON.stringify(blockKit, null, 2));
+
+  return res.json(blockKit);
 });
 
 export default orderRouter;

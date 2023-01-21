@@ -4,7 +4,7 @@ import MenuItem, { MenuItemSpec } from "./MenuItem";
 export interface OrderSpec {
   user: Types.ObjectId;
   // Name and keywords will never be set on an order, it will have been customized!
-  item: Omit<Omit<MenuItemSpec, "name">, "keywords">;
+  item: MenuItemSpec;
   tab?: Types.ObjectId;
   created: number;
   future: boolean;
