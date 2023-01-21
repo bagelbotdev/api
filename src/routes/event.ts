@@ -18,6 +18,9 @@ async function handleOrderMention(req: any, res: any) {
 }
 
 eventRouter.post("/", async (req, res) => {
+  if (req.body.type == "url_verification") {
+    return res.end(req.body.challenge);
+  }
   const { event } = req.body;
 
   if (event.type == "app_mention") {
