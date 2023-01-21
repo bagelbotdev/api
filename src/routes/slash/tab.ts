@@ -5,7 +5,7 @@ import MenuItemModel from "../../db/models/MenuItem";
 import OrderModel from "../../db/models/Order";
 import OrderTabModel from "../../db/models/OrderTab";
 import UserModel from "../../db/models/User";
-import MenuItem, { MenuItemSpec } from "../../db/schemas/MenuItem";
+import MenuItem, { MenuItemSpec, previewItem } from "../../db/schemas/MenuItem";
 import registration from "../../middlewares/registration";
 import { sendMessage } from "../../slack/utils";
 
@@ -29,12 +29,12 @@ tabRouter.post("/", async (req, res) => {
 
       sendMessage(
         `:bagel: <@${req.userRecord?.slack_user_id}> opened a tab!\n` +
-          (text.includes("noping")
-            ? ""
-            : (await UserModel.find({ subscribed_tab_open: true })).reduce(
-                (str, cur) => (str += `<@${cur.slack_user_id}> `),
-                ""
-              )),
+        (text.includes("noping")
+          ? ""
+          : (await UserModel.find({ subscribed_tab_open: true })).reduce(
+            (str, cur) => (str += `<@${cur.slack_user_id}> `),
+            ""
+          )),
         "#0cdc73"
       );
 
@@ -46,15 +46,16 @@ tabRouter.post("/", async (req, res) => {
 
       for (let order of futures) {
         const user = await UserModel.findById(order.user);
-        const item = await MenuItemModel.findById(order.item);
+        const item = order.item;
 
         if (
           user?._id != req.userRecord?._id &&
-          !(await canAfford(user?.bryxcoin_address!, item?.price! * 100))
+          !(await canAfford(user?.bryxcoin_address!, item.price * 100))
         ) {
           console.log("failed");
           await sendMessage(
-            `Scheduled order \`${item?.name}\` for <@${user?.slack_user_id}> was ignored due to a lack of funds.`,
+            `Scheduled order ${previewItem(item)} for <@${user?.slack_user_id
+            }> was ignored due to a lack of funds.`,
             "#ff0033"
           );
           continue;
@@ -66,17 +67,13 @@ tabRouter.post("/", async (req, res) => {
           await createTransactionBySlackId(
             user?.slack_user_id!,
             req.userRecord?.slack_user_id!,
-            item?.price! * 100
+            item.price! * 100
           );
 
-        await addToCart(
-          newTab.balsam_cart_guid,
-          item as unknown as MenuItemSpec,
-          user?.first_name ?? ""
-        );
+        await addToCart(newTab.balsam_cart_guid, item, user?.first_name ?? "");
 
         await sendMessage(
-          `Scheduled order \`${item?.name}\` for <@${user?.slack_user_id!}> was applied!`,
+          `Scheduled order ${previewItem(item)} for <@${user?.slack_user_id!}> was applied!`,
           "#eaddca"
         );
 
@@ -113,19 +110,19 @@ tabRouter.post("/", async (req, res) => {
       let totalPrice = 0;
 
       for (let order of orders) {
-        const item = await MenuItemModel.findById(order.item);
+        const item = order.item;
         const user = await UserModel.findById(order.user);
-        orderReport += `${user?.first_name + " " + user?.last_name} ordered ${item?.name} ($${
-          item?.price
-        })\n`;
-        totalPrice += item?.price ?? 0;
+        orderReport += `${user?.first_name + " " + user?.last_name} ordered ${previewItem(
+          item
+        )} ($${item.price})\n`;
+        totalPrice += item.price ?? 0;
       }
 
       await sendMessage(
         `Bagel tab closed!\nhttp://carts.bagelbot.net/${curTab.balsam_cart_guid}\n\n` +
-          orderReport +
-          "\n---\nTotal: $" +
-          totalPrice,
+        orderReport +
+        "\n---\nTotal: $" +
+        totalPrice,
         "#cc8899"
       );
       return;
