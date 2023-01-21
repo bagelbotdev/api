@@ -4,8 +4,10 @@ import UserModel from "../db/models/User";
 import { canAfford, createTransactionBySlackId } from "../coin/payment";
 import { newCoinUser } from "../coin/utils";
 import { addToCart } from "../balsam/cart";
+import { getItem } from "../balsam/items";
 import { sendMessage } from "../slack/utils";
 import { MenuItemSpec } from "../db/schemas/MenuItem";
+import mapConfigureOrderToBlockKit from "../slack/blockkit/mappers/configureOrder";
 
 import { sendInteractionResponse } from "../slack/utils";
 import MenuItemModel from "../db/models/MenuItem";
@@ -18,9 +20,55 @@ const interactionRouter = Router();
 const ACTION_DISPATCH: { [k: string]: (payload: any) => Promise<unknown> } = {
   "registration-submit": handleRegistrationSubmit,
   "unregistration-submit": handleUnregistrationSubmit,
-  "confirm-order": handleConfirmOrder,
-  "schedule-order": handleScheduleOrder,
+  "confirm-custom-order": handleConfirmOrder,
+  "schedule-custom-order": handleScheduleOrder,
+  "configure-order": handleConfigureOrder,
 };
+
+async function handleConfigureOrder(payload: any) {
+  const [_, cartGuid, itemGuid, itemGroupGuid, groupGuid] = payload.actions
+    .at(0)
+    .action_id.split(":");
+  console.log(payload.state.values);
+  const item = await getItem(itemGuid, itemGroupGuid);
+
+  let priceDelta = 0;
+  for (const groupGuid in payload.state.values) {
+    const modifierGroup = item.modifierGroups.find(
+      (modifierGroup) => modifierGroup.guid == groupGuid
+    );
+    if (!modifierGroup) {
+      throw new Error(`Unknown modifier: ${groupGuid}`);
+    }
+
+    console.log(JSON.stringify(payload.state.values[groupGuid], null, 2));
+    const state = Object.entries(payload.state.values[groupGuid])[0][1] as any;
+    const selectedOptions = (state.selected_options ?? [state.selected_option]).filter(
+      (j: any) => !!j
+    );
+    if (!selectedOptions.length) continue;
+
+    for (const selectedOption of selectedOptions) {
+      const optionGuid = selectedOption.value;
+      console.log(selectedOption, optionGuid);
+      const option = modifierGroup.modifiers.find((modifier) => modifier.itemGuid == optionGuid);
+      if (!option) {
+        throw new Error(`Unknown option: ${optionGuid}`);
+      }
+      if (modifierGroup?.pricingMode == "ADJUSTS_PRICE") {
+        priceDelta += option.price;
+      }
+    }
+  }
+
+  await fetch(payload.response_url, {
+    method: "POST",
+    body: JSON.stringify({
+      replace_original: true,
+      ...mapConfigureOrderToBlockKit(cartGuid, item, item.price + priceDelta),
+    }),
+  });
+}
 
 async function handleScheduleOrder(payload: any) {
   await ensureConnected();
@@ -30,8 +78,8 @@ async function handleScheduleOrder(payload: any) {
   if (!user)
     return sendMessage(
       "error! I attempted to look up a user by slack_id " +
-        payload.user.id +
-        " but found no record!!",
+      payload.user.id +
+      " but found no record!!",
       "#ff0033"
     );
 
@@ -127,8 +175,8 @@ async function handleRegistrationSubmit(payload: any) {
   await sendInteractionResponse(
     payload.response_url,
     ":+1: You're all set!. You can use `/register` to update your information at any time.\n\nYour wallet password is `" +
-      bryxcoin_password +
-      "`"
+    bryxcoin_password +
+    "`"
   );
 }
 
@@ -175,7 +223,8 @@ function parseState(incomingState: {
 
 interactionRouter.post("/", async (req, res) => {
   const payload = JSON.parse(req.body.payload);
-  const action_id = payload.actions.at(0).action_id;
+  console.log(payload.actions, payload);
+  const action_id = payload.actions.at(0).action_id.replace(/^(.+?):.*$/, "$1");
 
   await ACTION_DISPATCH[action_id](payload);
 

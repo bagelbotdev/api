@@ -3,10 +3,13 @@ import { addToCart } from "../../balsam/cart";
 import OrderTabModel from "../../db/models/OrderTab";
 import MenuItem, { MenuItemSpec } from "../../db/schemas/MenuItem";
 import mapOrderConfirmationToBlockKit from "../../slack/blockkit/mappers/confirmOrder";
+import mapConfigureOrderToBlockKit from "../../slack/blockkit/mappers/configureOrder";
 import { ensureConnected, searchMenuItemsByKeyword } from "../../db/util";
 import registration from "../../middlewares/registration";
 import { sendMessage } from "../../slack/utils";
 import MenuItemModel from "../../db/models/MenuItem";
+import { getItem } from "../../balsam/items";
+import fs from "fs";
 const orderRouter = Router();
 
 orderRouter.use(registration);
@@ -17,6 +20,18 @@ orderRouter.post("/", async (req, res) => {
   const curTab = (await OrderTabModel.find({ closed: false })).shift();
 
   const results = await searchMenuItemsByKeyword(text);
+
+  const wigglyItem = await getItem(
+    "06a77603-e9cb-49ff-a26b-c9d93ffb84d6",
+    "0c8b6d60-f015-48b4-90b9-d19b11c07f0b"
+  );
+
+  console.log(wigglyItem);
+
+  const cartGuid = curTab?.balsam_cart_guid ?? "<NONE>";
+  const blockKit = mapConfigureOrderToBlockKit(cartGuid, wigglyItem);
+  fs.writeFileSync("/tmp/wiggler.json", JSON.stringify(blockKit, null, 2));
+  return res.json(blockKit);
 
   if (text.trim().split(" ").shift() == "dryrun") {
     return res.end(
@@ -33,7 +48,6 @@ orderRouter.post("/", async (req, res) => {
 
   const prefabMenuItem = await MenuItemModel.findById(bestResult!.ref);
 
-  const cartGuid = curTab?.balsam_cart_guid ?? "<NONE>";
   return res.json(
     mapOrderConfirmationToBlockKit(
       cartGuid!,

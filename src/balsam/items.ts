@@ -1,6 +1,29 @@
 import { queryFromBalsam } from "./utils";
 import { MENU_ITEM_DETAILS_QUERY, MENU_ITEM_DETAILS_VARIABLES } from "../../gql/menu_item.gql";
 
+type ModifierGroup = {
+  guid: string;
+  maxSelections: number | null;
+  minSelections: number;
+  modifiers: Modifier[];
+  name: string;
+  pricingMode: "INCLUDED" | "ADJUSTS_PRICE";
+  __typename: "ModifierGroup";
+};
+
+type Modifier = {
+  allowsDuplicates: boolean;
+  isDefault: boolean;
+  itemGroupGuid: null;
+  itemGuid: string;
+  modifierGroups: unknown[];
+  name: string;
+  outOfStock: boolean;
+  price: number;
+  selected: boolean;
+  __typename: "Modifier";
+};
+
 export async function getItem(itemGuid: string, itemGroupGuid: string) {
   const vars: MENU_ITEM_DETAILS_VARIABLES = {
     input: {
@@ -10,7 +33,15 @@ export async function getItem(itemGuid: string, itemGroupGuid: string) {
   };
 
   const balsamRes = await queryFromBalsam(MENU_ITEM_DETAILS_QUERY, vars);
-  const { description, name, price, modifierGroups } = balsamRes.data;
+  console.log(balsamRes.data);
+  const { description, name, price, modifierGroups } = balsamRes.data.menuItemDetails;
 
-  return { itemGuid, itemGroupGuid, description, name, price, modifierGroups };
+  return {
+    itemGuid,
+    itemGroupGuid,
+    description,
+    name,
+    price,
+    modifierGroups: modifierGroups as ModifierGroup[],
+  };
 }
