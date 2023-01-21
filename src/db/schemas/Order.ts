@@ -1,8 +1,10 @@
 import { Schema, SchemaType, Types } from "mongoose";
+import MenuItem, { MenuItemSpec } from "./MenuItem";
 
 export interface OrderSpec {
   user: Types.ObjectId;
-  item: Types.ObjectId;
+  // Name and keywords will never be set on an order, it will have been customized!
+  item: Omit<Omit<MenuItemSpec, "name">, "keywords">;
   tab?: Types.ObjectId;
   created: number;
   future: boolean;
@@ -11,7 +13,7 @@ export interface OrderSpec {
 export default new Schema<OrderSpec>({
   user: { type: Schema.Types.ObjectId, ref: "User", required: true },
   tab: { type: Schema.Types.ObjectId, ref: "OrderTab" },
-  item: { type: Schema.Types.ObjectId, ref: "MenuItem", required: true },
+  item: { type: MenuItem, required: true },
   created: { type: "number", required: true },
   future: { type: "boolean", default: false, required: true },
 });

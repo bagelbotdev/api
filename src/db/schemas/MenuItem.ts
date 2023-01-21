@@ -1,18 +1,20 @@
 import { Schema } from "mongoose";
 
-const BalsamItemModifier = new Schema({
+const BalsamItemModifier = new Schema<
+  MenuItemSpec["balsam_modifiers"][number]["modifiers"][number]
+>({
   modifier_group_guid: { type: String },
   modifier_guid: { type: String },
 });
 
-const BalsamItemModifierSet = new Schema({
+const BalsamItemModifierSet = new Schema<MenuItemSpec["balsam_modifiers"][number]>({
   modifier_set_guid: { type: String },
   modifiers: [{ type: BalsamItemModifier }],
 });
 
-export default new Schema({
-  name: { type: String },
-  keywords: [{ type: Schema.Types.String }],
+export default new Schema<MenuItemSpec>({
+  name: { type: String, required: false },
+  keywords: [{ type: Schema.Types.String, required: false }],
   balsam_item_guid: { type: String },
   balsam_group_guid: { type: String },
   balsam_modifiers: [{ type: BalsamItemModifierSet }],
@@ -20,9 +22,9 @@ export default new Schema({
 });
 
 export interface MenuItemSpec {
-  name: string;
+  name?: string;
   price: number;
-  keywords: string[];
+  keywords?: string[];
   balsam_item_guid: string;
   balsam_group_guid: string;
   balsam_modifiers: {

@@ -25,15 +25,42 @@ const ACTION_DISPATCH: { [k: string]: (payload: any) => Promise<unknown> } = {
   "configure-order": handleConfigureOrder,
 };
 
-async function handleConfigureOrder(payload: any) {
-  const [_, cartGuid, itemGuid, itemGroupGuid, groupGuid] = payload.actions
-    .at(0)
-    .action_id.split(":");
-  console.log(payload.state.values);
-  const item = await getItem(itemGuid, itemGroupGuid);
+type Selection = {
+  text: {
+    type: "plain_text";
+    text: string;
+    emoji?: boolean;
+  };
+  value: string;
+};
 
-  let priceDelta = 0;
-  for (const groupGuid in payload.state.values) {
+type SlackState = {
+  values: {
+    [groupGuid: string]: {
+      [actionId: string]:
+      | {
+        type: "multi_static_select";
+        selected_options: Selection[];
+      }
+      | {
+        type: "static_select";
+        selected_option: Selection | null;
+      };
+    };
+  };
+};
+
+function generateItem(
+  item: Awaited<ReturnType<typeof getItem>>,
+  slackState: SlackState
+): MenuItemSpec {
+  const menuItem: MenuItemSpec = {
+    price: item.price,
+    balsam_item_guid: item.itemGuid,
+    balsam_group_guid: item.itemGroupGuid,
+    balsam_modifiers: [],
+  };
+  for (const groupGuid in slackState.values) {
     const modifierGroup = item.modifierGroups.find(
       (modifierGroup) => modifierGroup.guid == groupGuid
     );
@@ -41,38 +68,56 @@ async function handleConfigureOrder(payload: any) {
       throw new Error(`Unknown modifier: ${groupGuid}`);
     }
 
-    console.log(JSON.stringify(payload.state.values[groupGuid], null, 2));
-    const state = Object.entries(payload.state.values[groupGuid])[0][1] as any;
-    const selectedOptions = (state.selected_options ?? [state.selected_option]).filter(
-      (j: any) => !!j
-    );
-    if (!selectedOptions.length) continue;
+    const state = Object.entries(slackState.values[groupGuid])[0][1];
+    const selectedOptions = (
+      state.type == "static_select" ? [state.selected_option] : state.selected_options
+    ).filter((j) => j !== null) as Selection[];
+
+    const dbModifier: MenuItemSpec["balsam_modifiers"][number] = {
+      modifier_set_guid: groupGuid,
+      modifiers: [],
+    };
+    menuItem.balsam_modifiers.push(dbModifier);
 
     for (const selectedOption of selectedOptions) {
       const optionGuid = selectedOption.value;
-      console.log(selectedOption, optionGuid);
       const option = modifierGroup.modifiers.find((modifier) => modifier.itemGuid == optionGuid);
       if (!option) {
         throw new Error(`Unknown option: ${optionGuid}`);
       }
+      dbModifier.modifiers.push({
+        modifier_group_guid: option.itemGroupGuid || item.itemGroupGuid,
+        modifier_guid: option.itemGuid,
+      });
       if (modifierGroup?.pricingMode == "ADJUSTS_PRICE") {
-        priceDelta += option.price;
+        menuItem.price += option.price;
       }
     }
   }
+  return menuItem;
+}
+
+async function handleConfigureOrder(payload: any) {
+  const [_, cartGuid, itemGuid, itemGroupGuid, groupGuid] = payload.actions
+    .at(0)
+    .action_id.split(":");
+  console.log(payload.state.values);
+  const item = await getItem(itemGuid, itemGroupGuid);
 
   await fetch(payload.response_url, {
     method: "POST",
     body: JSON.stringify({
       replace_original: true,
-      ...mapConfigureOrderToBlockKit(cartGuid, item, item.price + priceDelta),
+      ...mapConfigureOrderToBlockKit(cartGuid, item, generateItem(item, payload.state).price),
     }),
   });
 }
 
 async function handleScheduleOrder(payload: any) {
   await ensureConnected();
-  const [_, menuItemOid] = payload.actions.at(0).value.split(":");
+  const [_cartGuid, itemGuid, itemGroupGuid] = payload.actions.at(0).value.split(":");
+  const item = await getItem(itemGuid, itemGroupGuid);
+  const menuItem = generateItem(item, payload.state);
 
   const user = await UserModel.findOne({ slack_user_id: payload.user.id });
   if (!user)
@@ -83,16 +128,9 @@ async function handleScheduleOrder(payload: any) {
       "#ff0033"
     );
 
-  const menuItem = await MenuItemModel.findOne({ _id: menuItemOid });
-  if (!menuItem)
-    return sendMessage(
-      "error! I attempted to look up menuitem " + menuItemOid + " but found no record!!",
-      "#ff0033"
-    );
-
   const order = new OrderModel({
     user: user._id,
-    item: menuItem._id,
+    item: menuItem,
     future: true,
     created: Date.now(),
   });
@@ -104,8 +142,9 @@ async function handleScheduleOrder(payload: any) {
 async function handleConfirmOrder(payload: any) {
   await ensureConnected();
 
-  const [cartGuid, menuItemOid] = payload.actions.at(0).value.split(":");
-  const menuItem = await MenuItemModel.findOne({ _id: menuItemOid });
+  const [cartGuid, itemGuid, itemGroupGuid] = payload.actions.at(0).value.split(":");
+  const item = await getItem(itemGuid, itemGroupGuid);
+  const menuItem = generateItem(item, payload.state);
 
   const user = await UserModel.findOne({ slack_user_id: payload.user.id });
   const tab = await OrderTabModel.findOne({ closed: false });
@@ -125,13 +164,13 @@ async function handleConfirmOrder(payload: any) {
       ":sadge:, looks like you can't afford that! Check you bryxcoin wallet with `/balance`. To get more bryxcoin, you can reach out to Tyler for a buyin, or you can host the next bagel tab! `/tab open`"
     );
 
-  await addToCart(cartGuid!, menuItem as unknown as MenuItemSpec, user!.first_name!);
+  await addToCart(cartGuid!, menuItem, user!.first_name!);
   await sendMessage(`<@${user!.slack_user_id!}> ordered ${menuItem?.name}`, "#EADDCA");
 
   await OrderModel.create({
     tab: tab._id,
     user: user!._id,
-    item: menuItem!._id,
+    item: menuItem,
     created: Date.now(),
   });
 
