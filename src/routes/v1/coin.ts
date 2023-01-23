@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { ensureConnected } from "../../db/util";
-import { createTransactionBySlackId, getBalance } from "../../coin/payment";
+import { getBalance } from "../../coin/payment";
 import UserModel from "../../db/models/User";
 
 const coinRouter = Router();

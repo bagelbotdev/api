@@ -8,7 +8,7 @@ import OrderModel from "../../db/models/Order";
 import { ensureConnected } from "../../db/util";
 import OrderTabModel from "../../db/models/OrderTab";
 import MenuItemModel from "../../db/models/MenuItem";
-import { createTransactionBySlackId, getBalanceOverTime } from "../../coin/payment";
+import { createTransactionBySlackId } from "../../coin/payment";
 import { getSlackProfilePhotoBySlackId } from "../../slack/api/profiles";
 
 const meRouter = Router();
@@ -100,15 +100,6 @@ meRouter.get("/tabs", async (req, res) => {
       })
     )
   );
-});
-
-meRouter.get("/coin-history", async (req, res) => {
-  const balanceByBlocks = await getBalanceOverTime(req.userRecord!.bryxcoin_address);
-  return res.json(balanceByBlocks.filter((v, i, arr) => arr[i - 1] != v));
-});
-
-meRouter.get("/hosts", async (req, res) => {
-  return res.json(await HostModel.find({ owner_id: req.userRecord?._id.toString() }));
 });
 
 meRouter.get("/notifications", async (req, res) => {
