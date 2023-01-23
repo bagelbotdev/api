@@ -27,9 +27,4 @@ app.use("/v1", v1Router);
 
 app.get("/", (req, res) => res.redirect("https://bryx.slack.com/archives/C03J2TJNRV2"));
 
-
-app.get("/dashboard", (req, res) =>
-  res.redirect("https://grafana.erwijet.com/d/NGBaFzH4z/bagelbot-general")
-);
-
 app.listen(PORT, "0.0.0.0", () => console.log("listening on " + PORT));
