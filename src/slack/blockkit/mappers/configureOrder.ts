@@ -1,5 +1,6 @@
 import { getItem } from "../../../balsam/items";
 import { MenuItemSpec } from "../../../db/schemas/MenuItem";
+import { TAX } from "../../../balsam/utils";
 
 export default function mapConfigureOrderToBlockKit(
   cartGuid: string,
@@ -27,7 +28,8 @@ export default function mapConfigureOrderToBlockKit(
           const options = modifiers.map((modifier) => ({
             text: {
               type: "plain_text",
-              text: modifier.name + (modifier.price ? ` (+$${modifier.price.toFixed(2)})` : ""),
+              text:
+                modifier.name + (modifier.price ? ` (+$${(modifier.price * TAX).toFixed(2)})` : ""),
             },
             value: modifier.itemGuid,
           }));

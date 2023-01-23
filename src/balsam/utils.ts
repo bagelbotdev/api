@@ -4,6 +4,9 @@ import { createClient, TypedDocumentNode, OperationResult } from "@urql/core";
 // @ts-ignore
 globalThis.fetch = fetch;
 
+// TODO: Is this illegal?
+export const TAX = 1.04;
+
 export function graphqlClient() {
   return createClient({
     url: "https://ws-api.toasttab.com/consumer-app-bff/v1/graphql",
@@ -12,7 +15,7 @@ export function graphqlClient() {
         "apollographql-client-name": "com.toasttab.consumer-android",
         "apollographql-client-version": "1.38-production",
         "user-agent": "okhttp/4.3.1",
-      }
+      },
     }),
   });
 }

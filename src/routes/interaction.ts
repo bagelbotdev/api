@@ -8,6 +8,7 @@ import { getItem } from "../balsam/items";
 import { sendMessage } from "../slack/utils";
 import { MenuItemSpec, previewItem } from "../db/schemas/MenuItem";
 import mapConfigureOrderToBlockKit from "../slack/blockkit/mappers/configureOrder";
+import { TAX } from "../balsam/utils";
 
 import { sendInteractionResponse } from "../slack/utils";
 import MenuItemModel from "../db/models/MenuItem";
@@ -97,6 +98,8 @@ function generateItem(
       }
     }
   }
+  // NYS sales tax
+  menuItem.price *= TAX;
   menuItem.receipt_name = `*${item.name}* (${receiptOptions.join(", ")})`;
   return menuItem;
 }
