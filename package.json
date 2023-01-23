@@ -2,18 +2,11 @@
   "name": "bagelbot",
   "version": "1.1.0",
   "description": "",
-  "main": "dist/src/index.js",
   "min_host_ver": "1.3.0",
   "scripts": {
-    "build": "tsc",
     "build-menu": "ts-node menu/build-items.ts",
-    "start": "npm run build && node dist/src/index.js",
-    "format": "prettier --write src",
-    "update-service": "kubectl rollout restart deploy bagelbot-deployment -n  bagelbot",
-    "docker-build": "podman buildx build --platform linux/amd64 . -t ghcr.io/bagelbotdev/api:latest",
-    "docker-push": "podman push ghcr.io/bagelbotdev/api:latest",
-    "deploy": "yarn docker-build && yarn docker-push",
-    "rollout": "rm -rf dist/ && yarn build && yarn deploy && sleep 3 && yarn update-service && sleep 1 && watch -n 0.5 curl -sL https://bagelbot.erwijet.com/healthcheck"
+    "start": "ts-node src/index.ts",
+    "format": "prettier --write src"
   },
   "keywords": [],
   "author": "",
