@@ -2,8 +2,7 @@ FROM docker.io/node:16
 WORKDIR /app
 
 COPY package.json /app/package.json
-COPY node_modules/ /app/node_modules
-COPY dist/ /app/dist
+RUN yarn --frozen-lockfile
 
-
-CMD ["node", "dist/src/index.js"]
+COPY . /app/
+CMD ["yarn", "start"]
