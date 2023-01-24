@@ -1,6 +1,6 @@
 import { getItem } from "../../../balsam/items";
 import { MenuItemSpec } from "../../../db/schemas/MenuItem";
-import { TAX } from "../../../balsam/utils";
+import { TAX, roundUSD } from "../../../balsam/utils";
 
 export default function mapConfigureOrderToBlockKit(
   cartGuid: string,
@@ -29,7 +29,8 @@ export default function mapConfigureOrderToBlockKit(
             text: {
               type: "plain_text",
               text:
-                modifier.name + (modifier.price ? ` (+$${(modifier.price * TAX).toFixed(2)})` : ""),
+                modifier.name +
+                (modifier.price ? ` (+$${roundUSD(modifier.price * TAX).toFixed(2)})` : ""),
             },
             value: modifier.itemGuid,
           }));
@@ -78,7 +79,7 @@ export default function mapConfigureOrderToBlockKit(
             type: "button",
             text: {
               type: "plain_text",
-              text: `Add to Tab ($${menuItem.price.toFixed(2)})`,
+              text: `Add to Tab ($${roundUSD(menuItem.price).toFixed(2)})`,
               emoji: true,
             },
             value: cartGuid + ":" + item.itemGuid + ":" + item.itemGroupGuid,

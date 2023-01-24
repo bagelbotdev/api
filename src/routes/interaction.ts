@@ -99,7 +99,7 @@ function generateItem(
     }
   }
   // NYS sales tax
-  menuItem.price *= TAX;
+  menuItem.price = roundUSD(menuItem.price * TAX);
   menuItem.receipt_name = `*${item.name}* (${receiptOptions.join(", ")})`;
   return menuItem;
 }

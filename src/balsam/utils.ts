@@ -5,7 +5,11 @@ import { createClient, TypedDocumentNode, OperationResult } from "@urql/core";
 globalThis.fetch = fetch;
 
 // TODO: Is this illegal?
-export const TAX = 1.04;
+export const TAX = 1.08;
+
+export function roundUSD(usd: number): number {
+  return Math.ceil(usd * 100) / 100;
+}
 
 export function graphqlClient() {
   return createClient({
