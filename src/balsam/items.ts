@@ -33,7 +33,8 @@ export async function getItem(itemGuid: string, itemGroupGuid: string) {
   };
 
   const balsamRes = await queryFromBalsam(MENU_ITEM_DETAILS_QUERY, vars);
-  console.log(balsamRes.data);
+  console.log(vars);
+  console.log(balsamRes.data, balsamRes);
   const { description, name, price, modifierGroups } = balsamRes.data.menuItemDetails;
 
   return {
