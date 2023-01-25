@@ -8,13 +8,11 @@ import { getItem } from "../balsam/items";
 import { sendMessage } from "../slack/utils";
 import { MenuItemSpec, previewItem } from "../db/schemas/MenuItem";
 import mapConfigureOrderToBlockKit from "../slack/blockkit/mappers/configureOrder";
-import { TAX } from "../balsam/utils";
+import { TAX, roundUSD } from "../balsam/utils";
 
 import { sendInteractionResponse } from "../slack/utils";
-import MenuItemModel from "../db/models/MenuItem";
 import OrderTabModel from "../db/models/OrderTab";
 import OrderModel from "../db/models/Order";
-import total_orders from "../prom/total_orders";
 
 const interactionRouter = Router();
 
