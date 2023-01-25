@@ -4,7 +4,7 @@ import UserModel from "../db/models/User";
 import { canAfford, createTransactionBySlackId } from "../coin/payment";
 import { newCoinUser } from "../coin/utils";
 import { addToCart } from "../balsam/cart";
-import { getItem } from "../balsam/items";
+import { getItem, BalsamItem } from "../balsam/items";
 import { sendMessage } from "../slack/utils";
 import { MenuItemSpec, previewItem } from "../db/schemas/MenuItem";
 import mapConfigureOrderToBlockKit from "../slack/blockkit/mappers/configureOrder";
@@ -49,10 +49,7 @@ type SlackState = {
   };
 };
 
-function generateItem(
-  item: Awaited<ReturnType<typeof getItem>>,
-  slackState: SlackState
-): MenuItemSpec {
+function generateItem(item: BalsamItem, slackState: SlackState): MenuItemSpec {
   const menuItem: MenuItemSpec = {
     name: item.name,
     price: item.price,
@@ -108,6 +105,16 @@ async function handleConfigureOrder(payload: any) {
     .action_id.split(":");
   console.log(payload.state.values);
   const item = await getItem(itemGuid, itemGroupGuid);
+  if (!item) {
+    console.log("Couldn't configure?!");
+    await fetch(payload.response_url, {
+      method: "POST",
+      body: JSON.stringify({
+        content: `Couldn't configure item with ${itemGuid},${itemGroupGuid}`,
+      }),
+    });
+    return;
+  }
 
   await fetch(payload.response_url, {
     method: "POST",
@@ -122,6 +129,12 @@ async function handleScheduleOrder(payload: any) {
   await ensureConnected();
   const [_cartGuid, itemGuid, itemGroupGuid] = payload.actions.at(0).value.split(":");
   const item = await getItem(itemGuid, itemGroupGuid);
+  if (!item) {
+    return await sendInteractionResponse(
+      payload.response_url,
+      `Error! Couldn't find item ${itemGuid} ${itemGroupGuid}`
+    );
+  }
   const menuItem = generateItem(item, payload.state);
 
   const user = await UserModel.findOne({ slack_user_id: payload.user.id });
@@ -149,6 +162,12 @@ async function handleConfirmOrder(payload: any) {
 
   const [cartGuid, itemGuid, itemGroupGuid] = payload.actions.at(0).value.split(":");
   const item = await getItem(itemGuid, itemGroupGuid);
+  if (!item) {
+    return await sendInteractionResponse(
+      payload.response_url,
+      `Item not found: ${itemGuid} ${itemGroupGuid}`
+    );
+  }
   const menuItem = generateItem(item, payload.state);
 
   const user = await UserModel.findOne({ slack_user_id: payload.user.id });

@@ -38,6 +38,9 @@ orderRouter.post("/", async (req, res) => {
 
   const prefabMenuItem = (await MenuItemModel.findById(bestResult!.ref))!;
   const item = await getItem(prefabMenuItem.balsam_item_guid, prefabMenuItem.balsam_group_guid);
+  if (!item) {
+    return res.end(`Item not found: ${prefabMenuItem.name} :(`);
+  }
 
   const blockKit = mapConfigureOrderToBlockKit(cartGuid, item, prefabMenuItem);
   // fs.writeFileSync("/tmp/blockkit_broke.json", JSON.stringify(blockKit, null, 2));

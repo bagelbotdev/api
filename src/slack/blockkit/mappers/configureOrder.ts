@@ -1,10 +1,10 @@
-import { getItem } from "../../../balsam/items";
+import { BalsamItem } from "../../../balsam/items";
 import { MenuItemSpec } from "../../../db/schemas/MenuItem";
 import { TAX, roundUSD } from "../../../balsam/utils";
 
 export default function mapConfigureOrderToBlockKit(
   cartGuid: string,
-  item: Awaited<ReturnType<typeof getItem>>,
+  item: BalsamItem,
   menuItem: MenuItemSpec
 ) {
   return {

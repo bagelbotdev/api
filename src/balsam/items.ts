@@ -24,7 +24,16 @@ type Modifier = {
   __typename: "Modifier";
 };
 
-export async function getItem(itemGuid: string, itemGroupGuid: string) {
+export type BalsamItem = {
+  itemGuid: string;
+  itemGroupGuid: string;
+  description: string;
+  name: string;
+  price: number;
+  modifierGroups: ModifierGroup[];
+};
+
+export async function getItem(itemGuid: string, itemGroupGuid: string): Promise<BalsamItem | null> {
   const vars: MENU_ITEM_DETAILS_VARIABLES = {
     input: {
       itemGroupGuid,
@@ -33,6 +42,9 @@ export async function getItem(itemGuid: string, itemGroupGuid: string) {
   };
 
   const balsamRes = await queryFromBalsam(MENU_ITEM_DETAILS_QUERY, vars);
+  if (!balsamRes.data) {
+    return null;
+  }
   console.log(vars);
   console.log(balsamRes.data, balsamRes);
   const { description, name, price, modifierGroups } = balsamRes.data.menuItemDetails;
