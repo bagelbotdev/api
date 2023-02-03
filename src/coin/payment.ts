@@ -26,7 +26,9 @@ export async function createTransaction(tx: {
     body: JSON.stringify(tx),
   });
 
-  return await res.json();
+  const response = await res.text();
+  console.log("Finished BXCN transaction", response, res.status, tx);
+  return JSON.parse(response);
 }
 
 export async function createTransactionBySlackId(
