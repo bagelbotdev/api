@@ -122,7 +122,7 @@ tabRouter.post("/", async (req, res) => {
         `Bagel tab closed!\nhttp://carts.bagelbot.net/${curTab.balsam_cart_guid}\n\n` +
         orderReport +
         "\n---\nTotal: $" +
-        totalPrice,
+        totalPrice.toFixed(2),
         "#cc8899"
       );
       return;
